@@ -1,1 +1,28 @@
-{\n  "name": "cryptowallet-platform",\n  "version": "1.0.0",\n  "description": "A cryptocurrency wallet platform",\n  "main": "index.js",\n  "scripts": {\n    "test": "echo 'Error: no test specified' && exit 1"\n  },\n  "author": "chinedudanieluyoba-svg",\n  "license": "ISC",\n  "engines": {\n    "node": ">=18 <21"\n  }\n}
+{
+  "name": "cryptowallet-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend/backend/api"
+  ],
+  "scripts": {
+    "install:backend": "cd backend/backend/api && npm install",
+    "build": "cd backend/backend/api && npm install && npm run build",
+    "start": "cd backend/backend/api && npm run start:prod",
+    "migrate": "cd backend/backend/api && npx prisma migrate deploy",
+    "postinstall": "cd backend/backend/api && npx prisma generate"
+  },
+  "dependencies": {
+    "@nestjs/typeorm": "^11.0.0",
+    "@prisma/client": "^7.3.0",
+    "pg": "^8.17.2",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "prisma": "^7.3.0"
+  },
+  "engines": {
+    "node": ">=18 <21",
+    "npm": ">=9.0.0"
+  }
+}

@@ -1,16 +1,6 @@
-import { defineConfig } from "prisma/config";
-
-export default defineConfig({
-  schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  datasource: {
-    provider: "postgresql",
-    url:
-      process.env.DATABASE_URL_PROD ||
-      process.env.DATABASE_URL_STAGING ||
-      process.env.DATABASE_URL_DEV ||
-      process.env.DATABASE_URL,
-  },
-});
+cd /path/to/cryptowallet-platform
+git pull origin main
+rm backend/backend/api/prisma.config.ts
+git add backend/backend/api/prisma.config.ts
+git commit -m "fix: remove invalid prisma.config.ts"
+git push origin main

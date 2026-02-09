@@ -7,10 +7,10 @@
   ],
   "scripts": {
     "install:backend": "cd backend/backend/api && npm install",
-    "build": "cd backend/backend/api && npm install && npm run build",
+    "build": "cd backend/backend/api && npm install && npx prisma generate && npm run build",
     "start": "cd backend/backend/api && npm run start:prod",
     "migrate": "cd backend/backend/api && npx prisma migrate deploy",
-    "postinstall": "cd backend/backend/api && npx prisma generate"
+    "postinstall": "cd backend/backend/api && npx prisma generate || echo 'Prisma generate failed, continuing...'"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",

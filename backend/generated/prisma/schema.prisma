@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // 'USER' | 'ADMIN'
+  createdAt DateTime @default(now())
+
+  wallet Wallet?
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Float    @default(0)
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Reconciliation flags
+  flaggedForReview Boolean   @default(false)
+  flaggedReason    String? // 'ledger_mismatch' | 'manual'
+  flaggedAt        DateTime?
+  flaggedDelta     Float? // Difference between wallet.balance and ledger sum
+
+  user         User                @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  onRamps      OnRamp[]
+  ledger       WalletLedgerEntry[]
+
+  @@index([flaggedForReview])
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  walletId       String
+  type           String // 'deposit' | 'withdraw' | 'buy' | 'sell'
+  amount         Float
+  idempotencyKey String?  @unique // For preventing duplicate transactions
+  createdAt      DateTime @default(now())
+
+  wallet        Wallet         @relation(fields: [walletId], references: [id])
+  webhookEvents WebhookEvent[]
+}
+
+model WalletLedgerEntry {
+  id              String   @id @default(uuid())
+  walletId        String
+  type            String // 'deposit' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'trading'
+  amount          Float
+  balanceBefore   Float
+  balanceAfter    Float
+  reference       String? // Transaction/Event reference
+  description     String?
+  source          String? // 'user' | 'admin' | 'webhook'
+  providerEventId String? // External provider event ID (for webhook credits)
+  idempotencyKey  String?  @unique // Prevents duplicate ledger entries (critical for payments)
+  createdAt       DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@index([source])
+  @@index([idempotencyKey])
+}
+
+model OnRamp {
+  id           String    @id @default(uuid())
+  walletId     String
+  provider     String // 'moonpay' | 'transak' | 'paystack' | 'stripe'
+  providerTxId String? // Transaction ID from provider for webhook validation
+  amount       Float // Amount in fiat
+  cryptoAmount Float? // Amount received in crypto (may differ due to fees)
+  currency     String    @default("USD") // Fiat currency
+  status       String    @default("pending") // 'pending' | 'completed' | 'failed' | 'cancelled'
+  metadata     Json? // Store provider-specific data for webhook validation
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  wallet         Wallet               @relation(fields: [walletId], references: [id])
+  missingWebhook MissingWebhookAlert?
+
+  @@index([walletId])
+  @@index([providerTxId])
+  @@index([status])
+}
+
+model WebhookEvent {
+  id            String    @id @default(uuid())
+  provider      String // 'moonpay' | 'transak' | 'paystack' | 'stripe'
+  externalId    String    @unique // Provider's external event ID
+  payloadHash   String // Hash of payload for tamper detection (NOT raw payload)
+  status        String    @default("pending") // 'pending' | 'processed' | 'ignored' | 'failed' | 'error' | 'dead_letter'
+  transactionId String? // Linked transaction ID (if applicable)
+  errorMessage  String? // Error details if status is 'failed' or 'error'
+  receivedAt    DateTime  @default(now())
+  processedAt   DateTime?
+
+  // Retry tracking
+  retryCount   Int       @default(0)
+  maxRetries   Int       @default(3)
+  lastRetryAt  DateTime?
+  deadLetterAt DateTime? // When moved to dead-letter queue
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([provider])
+  @@index([externalId])
+  @@index([status])
+  @@index([receivedAt])
+  @@index([retryCount])
+  @@index([deadLetterAt])
+}
+
+model AdminAccessLog {
+  id          String   @id @default(uuid())
+  adminUserId String // Admin user ID performing the action
+  action      String // 'list_wallets' | 'inspect_wallet' | etc
+  resource    String // 'wallets' | 'ledger' | 'webhooks'
+  resourceId  String? // ID of the specific resource being accessed
+  status      String // 'success' | 'denied' | 'error'
+  requestId   String? // Unique request ID for tracing
+  ipAddress   String? // Admin's IP address
+  userAgent   String? // Admin's user agent
+  metadata    Json? // Extra data (filters, return counts, error details)
+  timestamp   DateTime @default(now())
+
+  @@index([adminUserId])
+  @@index([action])
+  @@index([resource])
+  @@index([requestId])
+  @@index([timestamp])
+}
+
+model MissingWebhookAlert {
+  id         String    @id @default(uuid())
+  onRampId   String    @unique // Link to OnRamp
+  provider   String // 'moonpay' | 'transak' | 'paystack' | 'stripe'
+  status     String    @default("pending") // 'pending' | 'resolved' | 'manual_reviewed'
+  detectedAt DateTime  @default(now())
+  resolvedAt DateTime?
+  resolution String? // 'webhook_received' | 'manual_credit' | 'cancelled'
+  notes      String? // Admin notes about resolution
+
+  onRamp OnRamp @relation(fields: [onRampId], references: [id], onDelete: Cascade)
+
+  @@index([provider])
+  @@index([status])
+  @@index([detectedAt])
+}
+
+model DeadLetterQueue {
+  id         String    @id @default(uuid())
+  eventId    String // Source event ID (webhook/transaction/etc)
+  eventType  String // 'webhook' | 'transaction' | 'payment'
+  provider   String // Provider name for context
+  reason     String // Why it was DLQ'd: 'max_retries' | 'malformed' | 'timeout'
+  lastError  String? // Last error message
+  retryCount Int // How many retries attempted
+  maxRetries Int // Max retries allowed
+  payload    Json? // Original event payload (hashed for security)
+  status     String    @default("pending") // 'pending' | 'resolved' | 'manual_reviewed' | 'archived'
+  resolvedAt DateTime?
+  resolution String? // What was done: 'manual_replay' | 'manual_credit' | 'cancelled'
+  notes      String? // Admin notes
+  createdAt  DateTime  @default(now())
+
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+  @@index([reason])
+}
+
+model AlertLog {
+  id             String    @id @default(uuid())
+  alertType      String // 'balance_mismatch' | 'webhook_failures' | 'reconciliation_crash' | 'credit_spike'
+  severity       String // 'critical' | 'high' | 'medium' | 'low'
+  title          String // Alert title
+  message        String // Alert description
+  metadata       Json? // Context data (wallet ID, mismatch amount, etc)
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime?
+  resolvedBy     String? // Admin ID who resolved it
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([resolved])
+  @@index([createdAt])
+}

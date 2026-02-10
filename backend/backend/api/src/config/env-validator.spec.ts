@@ -2,10 +2,18 @@ import { EnvironmentValidator } from './env-validator';
 
 describe('EnvironmentValidator', () => {
   const originalEnv = process.env;
+  let consoleLogSpy: jest.SpyInstance;
 
   beforeEach(() => {
     // Create a fresh copy of env before each test
     process.env = { ...originalEnv };
+    // Spy on console.log to capture warnings
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+  });
+
+  afterEach(() => {
+    // Restore console.log after each test
+    consoleLogSpy.mockRestore();
   });
 
   afterAll(() => {
@@ -122,8 +130,15 @@ describe('EnvironmentValidator', () => {
     process.env.JWT_SECRET = 'test-secret';
     process.env.MOONPAY_WEBHOOK_SECRET = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
 
-    // Should not throw, but will log a warning
     expect(() => EnvironmentValidator.validate()).not.toThrow();
+    
+    // Verify warning is logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '\n⚠️  Optional environment variables not set (using defaults):',
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(
+      '🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is using a placeholder value',
+    ));
   });
 
   it('should accept placeholder values but log warnings for CORS_ALLOWED_ORIGINS in production', () => {
@@ -133,8 +148,15 @@ describe('EnvironmentValidator', () => {
     process.env.MOONPAY_WEBHOOK_SECRET = 'moonpay-secret';
     process.env.CORS_ALLOWED_ORIGINS = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
 
-    // Should not throw, but will log a warning
     expect(() => EnvironmentValidator.validate()).not.toThrow();
+    
+    // Verify warning is logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '\n⚠️  Optional environment variables not set (using defaults):',
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(
+      '🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value',
+    ));
   });
 
   it('should accept placeholder values but log warnings for both secrets in production', () => {
@@ -144,7 +166,17 @@ describe('EnvironmentValidator', () => {
     process.env.MOONPAY_WEBHOOK_SECRET = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
     process.env.CORS_ALLOWED_ORIGINS = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
 
-    // Should not throw, but will log warnings for both
     expect(() => EnvironmentValidator.validate()).not.toThrow();
+    
+    // Verify both warnings are logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '\n⚠️  Optional environment variables not set (using defaults):',
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(
+      '🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is using a placeholder value',
+    ));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(
+      '🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value',
+    ));
   });
 });

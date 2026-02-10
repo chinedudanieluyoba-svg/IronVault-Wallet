@@ -407,9 +407,9 @@ export class WalletService {
     walletBalance?: number,
   ) {
     const requestId = this.requestIdStorage.getRequestId();
-    let balanceToCheck = walletBalance;
+    let balanceToCheck: number;
 
-    if (balanceToCheck === undefined) {
+    if (walletBalance === undefined) {
       const wallet = await this.prisma.wallet.findUnique({
         where: { id: walletId },
       });
@@ -419,6 +419,8 @@ export class WalletService {
       }
 
       balanceToCheck = wallet.balance;
+    } else {
+      balanceToCheck = walletBalance;
     }
 
     const [totalCredits, totalDebits] = await Promise.all([

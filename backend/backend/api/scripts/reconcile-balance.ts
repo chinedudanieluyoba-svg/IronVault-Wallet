@@ -20,7 +20,7 @@
  * - Requires admin confirmation in production
  */
 
-import { PrismaClient } from '../../../generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as readline from 'readline';
 
 const prisma = new PrismaClient();

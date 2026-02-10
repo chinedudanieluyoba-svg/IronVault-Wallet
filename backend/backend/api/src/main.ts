@@ -1,3 +1,4 @@
+import 'dotenv/config'; // ⚡ Load .env file before any code reads process.env
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { EnvironmentValidator } from './config/env-validator';

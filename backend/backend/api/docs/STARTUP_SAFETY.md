@@ -14,19 +14,22 @@ In production, missing secrets should cause immediate failure, not runtime error
 
 The following variables **MUST** be set based on `NODE_ENV`:
 
-### Always Required
+### Always Required (Strictly Enforced)
 - `NODE_ENV` - Environment: `development`, `staging`, or `production`
 - `JWT_SECRET` - Secret for signing JWT tokens (min 32 chars)
-- `MOONPAY_WEBHOOK_SECRET` - MoonPay webhook signature verification
 
-### Database (Based on NODE_ENV)
+### Database (Based on NODE_ENV) - Strictly Required
 - `DATABASE_URL_DEV` - If `NODE_ENV=development`
 - `DATABASE_URL_STAGING` - If `NODE_ENV=staging`
 - `DATABASE_URL_PROD` - If `NODE_ENV=production`
 
+### Optional Secrets (Strongly Recommended)
+- `MOONPAY_WEBHOOK_SECRET` - MoonPay webhook signature verification (app will start without this, but webhook validation will fail)
+- `CORS_ALLOWED_ORIGINS` - CORS allowed origins (production only - app will start but CORS will be disabled)
+
 ## Behavior
 
-### ✅ Success Case
+### ✅ Success Case (All Variables Set)
 ```
 ✅ Environment variables validated
 
@@ -37,7 +40,24 @@ The following variables **MUST** be set based on `NODE_ENV`:
 [Nest] 12345  - 02/07/2026, 3:45:23 PM   LOG [NestFactory] Starting Nest application...
 ```
 
-### ❌ Failure Case
+### ⚠️ Warning Case (Optional Secrets Missing)
+```
+✅ Environment variables validated
+
+⚠️  Optional environment variables not set (using defaults):
+   🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is NOT SET. MoonPay webhook signature verification secret (webhook validation will fail without this). Set it in your deployment platform (e.g., Render Dashboard → Environment) for full functionality.
+   🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production. CORS will be disabled and API requests from frontend will fail. Set it in your deployment platform (e.g., Render Dashboard → Environment).
+
+📦 NODE_ENV: production
+🗄️  DATABASE: postgresql://user:***@db.neon.tech/cryptowallet
+🔐 JWT_SECRET: a3f2...k8j9 (64 chars)
+
+🚀 Application listening on port 10000
+```
+
+**App STARTS** - but with degraded functionality until secrets are set.
+
+### ❌ Failure Case (Required Variables Missing)
 ```
 ❌ CRITICAL: Missing required environment variables
 
@@ -49,13 +69,10 @@ The following environment variables MUST be set:
   ❌ JWT_SECRET
      → Secret for signing JWT tokens
 
-  ❌ MOONPAY_WEBHOOK_SECRET
-     → MoonPay webhook signature verification secret
-
 Application cannot start without these variables.
 Set them in your .env file or environment.
 
-Error: Missing required environment variables: DATABASE_URL_PROD, JWT_SECRET, MOONPAY_WEBHOOK_SECRET
+Error: Missing required environment variables: DATABASE_URL_PROD, JWT_SECRET
     at EnvironmentValidator.validate
     at bootstrap
 ```

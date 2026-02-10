@@ -303,14 +303,17 @@ This is expected on first deployment. The app will start successfully but you sh
 
   ❌ DATABASE_URL_PROD
   ❌ JWT_SECRET
-  ❌ MOONPAY_WEBHOOK_SECRET
-  ❌ CORS_ALLOWED_ORIGINS
 ```
+
+**Note:** As of the latest update, `MOONPAY_WEBHOOK_SECRET` and `CORS_ALLOWED_ORIGINS` are **optional** and will only generate warnings if missing. The application will start successfully without them, but:
+- Webhook validation will fail without `MOONPAY_WEBHOOK_SECRET`
+- CORS will be disabled without `CORS_ALLOWED_ORIGINS` (frontend requests will fail)
 
 **Solution:**
 1. Go to **Environment** tab in Render Dashboard
-2. Verify all required variables are set
+2. Verify `DATABASE_URL_PROD` and `JWT_SECRET` are set
 3. Click **"Manual Deploy"** → **"Deploy latest commit"**
+4. After successful deployment, add `MOONPAY_WEBHOOK_SECRET` and `CORS_ALLOWED_ORIGINS` for full functionality
 
 ### Error: "Database connection failed"
 

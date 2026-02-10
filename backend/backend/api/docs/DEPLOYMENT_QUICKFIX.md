@@ -1,6 +1,6 @@
 # Quick Fix: Render Deployment Error
 
-## Error Message
+## Error Message (OLD - Pre-Fix)
 
 ```
 ❌ CRITICAL: Missing required environment variables
@@ -22,6 +22,15 @@ The following environment variables MUST be set:
 Application cannot start without these variables.
 ```
 
+## ✅ UPDATED: New Behavior (After Fix)
+
+**As of the latest update**, only `DATABASE_URL_PROD` and `JWT_SECRET` are **strictly required**. 
+
+`MOONPAY_WEBHOOK_SECRET` and `CORS_ALLOWED_ORIGINS` are now **optional** during initial deployment:
+- The app will start and deploy successfully without them
+- You'll see **critical warnings** in the logs
+- You should add them after deployment for full functionality
+
 ## Quick Fix (5 minutes)
 
 ### Step 1: Go to Render Dashboard
@@ -34,13 +43,13 @@ Application cannot start without these variables.
 
 Click **"Add Environment Variable"** for each:
 
-#### 1. `DATABASE_URL_PROD`
+#### 1. `DATABASE_URL_PROD` (REQUIRED)
 
 - **Value**: Copy from your PostgreSQL database service
 - **Where to find**: Render Dashboard → PostgreSQL service → "Internal Database URL"
 - **Example**: `postgresql://user:password@dpg-abc123.oregon-postgres.render.com/cryptowallet?sslmode=require`
 
-#### 2. `JWT_SECRET`
+#### 2. `JWT_SECRET` (REQUIRED)
 
 - **Value**: Generate a secure random string
 - **How to generate**:
@@ -49,14 +58,20 @@ Click **"Add Environment Variable"** for each:
   ```
 - **Example**: `K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=`
 
-#### 3. `MOONPAY_WEBHOOK_SECRET`
+### Step 3: Add Optional Variables (Recommended)
 
+These are optional but strongly recommended for full functionality:
+
+#### 3. `MOONPAY_WEBHOOK_SECRET` (OPTIONAL - Recommended)
+
+- **Status**: App will deploy without this, but webhook validation will fail
 - **Value**: Get from MoonPay Dashboard
 - **Where to find**: [MoonPay Dashboard](https://www.moonpay.com/dashboard) → Settings → Webhooks
-- **If you don't have MoonPay**: Use a placeholder for now: `placeholder_moonpay_secret`
+- **If you don't have MoonPay**: Skip for now - the app will start with a critical warning
 
-#### 4. `CORS_ALLOWED_ORIGINS`
+#### 4. `CORS_ALLOWED_ORIGINS` (OPTIONAL - Required for frontend)
 
+- **Status**: App will deploy without this, but CORS will be disabled (frontend API requests will fail)
 - **Value**: Your frontend domain(s)
 - **Format**: Comma-separated list (no spaces)
 - **Examples**:

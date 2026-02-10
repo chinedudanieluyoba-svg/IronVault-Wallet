@@ -33,12 +33,15 @@ services:
       
       # Payment Provider Secrets (must be set manually in Render Dashboard)
       # These contain sensitive API keys and cannot be in this file
+      # IMPORTANT: Update this placeholder value in Render Dashboard → Environment after first deployment
       - key: MOONPAY_WEBHOOK_SECRET
-        sync: false  # Must be set in Render Dashboard → Environment
+        value: PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD
       
-      # CORS Configuration (must be set manually)
+      # CORS Configuration (must be set manually after deployment)
+      # IMPORTANT: Update this placeholder value in Render Dashboard → Environment after first deployment
+      # Example: https://app.yourdomain.com,https://yourdomain.com
       - key: CORS_ALLOWED_ORIGINS
-        sync: false  # Example: https://app.yourdomain.com,https://yourdomain.com
+        value: PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD
       
       # Optional: Advanced Configuration (uncomment if needed)
       # - key: PORT
@@ -70,10 +73,14 @@ databases:
     ipAllowList: []  # Empty = allow all Render services
 
 # After initial deployment:
-# 1. Set MOONPAY_WEBHOOK_SECRET in Render Dashboard → Environment
-# 2. Set CORS_ALLOWED_ORIGINS in Render Dashboard → Environment
-# 3. Verify DATABASE_URL_PROD is automatically populated
-# 4. Verify JWT_SECRET is automatically generated
+# 1. The app will start with placeholder values for MOONPAY_WEBHOOK_SECRET and CORS_ALLOWED_ORIGINS
+# 2. Check the logs for "CRITICAL WARNING" messages about placeholder values
+# 3. Go to Render Dashboard → Your Service → Environment tab
+# 4. Update MOONPAY_WEBHOOK_SECRET with your actual MoonPay webhook secret
+# 5. Update CORS_ALLOWED_ORIGINS with your actual frontend domain(s)
+# 6. Click "Save Changes" - Render will automatically restart the service
+# 7. Verify DATABASE_URL_PROD is automatically populated
+# 8. Verify JWT_SECRET is automatically generated
 #
 # To deploy:
 # 1. Commit this file to your repository

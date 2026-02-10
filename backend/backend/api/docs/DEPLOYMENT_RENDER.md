@@ -39,19 +39,21 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
    - **Start Command**: `npm run start:prod`
    - **Plan**: Starter (free) or higher for production
 
-### 3. Set Environment Variables
+### 3. Set Environment Variables (Optional)
 
-Click **"Environment"** tab and add these variables:
+**Note:** If you're using the `render.yaml` Blueprint deployment, most environment variables are automatically configured with placeholder values. The app will start successfully, and you can update the secrets later in the Render Dashboard.
+
+**For Manual Deployment:** Click **"Environment"** tab and add these variables:
 
 #### Required Variables
 
 | Variable | Value | How to Get |
 |----------|-------|------------|
-| `NODE_ENV` | `production` | Fixed value |
-| `DATABASE_URL_PROD` | `postgresql://user:pass@host/db` | From Step 1 (Internal Database URL) |
-| `JWT_SECRET` | Generate secure secret | Run: `openssl rand -base64 32` |
-| `MOONPAY_WEBHOOK_SECRET` | Your MoonPay secret | From [MoonPay Dashboard](https://www.moonpay.com/dashboard) |
-| `CORS_ALLOWED_ORIGINS` | `https://yourdomain.com` | Your frontend domain(s), comma-separated |
+| `NODE_ENV` | `production` | Fixed value (auto-set in Blueprint) |
+| `DATABASE_URL_PROD` | `postgresql://user:pass@host/db` | From Step 1 (auto-linked in Blueprint) |
+| `JWT_SECRET` | Generate secure secret | Auto-generated in Blueprint. Manual: `openssl rand -base64 32` |
+| `MOONPAY_WEBHOOK_SECRET` | Your MoonPay secret | From [MoonPay Dashboard](https://www.moonpay.com/dashboard). Placeholder set in Blueprint - update after first deploy |
+| `CORS_ALLOWED_ORIGINS` | `https://yourdomain.com` | Your frontend domain(s), comma-separated. Placeholder set in Blueprint - update after first deploy |
 
 #### Optional Variables (with sensible defaults)
 
@@ -73,16 +75,22 @@ Click **"Environment"** tab and add these variables:
 2. Render will:
    - Build your application
    - Run Prisma migrations
-   - Start the server
+   - Start the server (with placeholder values for secrets if using Blueprint)
 3. Monitor logs for:
    ```
    ✅ Environment variables validated
+   ⚠️  Optional environment variables not set (using defaults):
+      🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is using a placeholder value.
+      🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value.
    📦 NODE_ENV: production
    🗄️  DATABASE: postgresql://user:***@...
    🔐 JWT_SECRET: a3f2...k8j9 (64 chars)
-   ✅ CORS enabled for: https://yourdomain.com
    🚀 Application listening on port 10000
    ```
+4. **Important:** If you see the "CRITICAL WARNING" messages, update the placeholder values:
+   - Go to **Environment** tab
+   - Update `MOONPAY_WEBHOOK_SECRET` and `CORS_ALLOWED_ORIGINS` with real values
+   - Render will automatically restart the service
 
 ### 5. Run Database Migrations
 
@@ -267,6 +275,25 @@ Set up email alerts:
    - High CPU usage
 
 ## Troubleshooting
+
+### Warning: "Placeholder values detected"
+
+**Symptom:**
+```
+⚠️  Optional environment variables not set (using defaults):
+   🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is using a placeholder value.
+   🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value.
+```
+
+**Solution:**
+This is expected on first deployment. The app will start successfully but you should update these immediately:
+
+1. Go to **Environment** tab in Render Dashboard
+2. Update `MOONPAY_WEBHOOK_SECRET` with your actual MoonPay webhook secret (from [MoonPay Dashboard](https://www.moonpay.com/dashboard))
+3. Update `CORS_ALLOWED_ORIGINS` with your actual frontend domain(s) (e.g., `https://app.yourdomain.com`)
+4. Click **"Save Changes"** - Render will automatically restart with the new values
+
+**Note:** The placeholder values allow initial deployment to succeed, but the app will not function properly without real values.
 
 ### Error: "Missing required environment variables"
 

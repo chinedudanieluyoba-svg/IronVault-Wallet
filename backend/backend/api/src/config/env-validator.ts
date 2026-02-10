@@ -146,6 +146,10 @@ export class EnvironmentValidator {
 
       if (!value || value.trim() === '') {
         missing.push(envVar);
+      } else if (value === 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD') {
+        warnings.push(
+          `🚨 CRITICAL WARNING: ${envVar.key} is using a placeholder value. Update it immediately in your deployment platform (e.g., Render Dashboard → Environment).`,
+        );
       }
     }
 
@@ -159,6 +163,10 @@ export class EnvironmentValidator {
           description:
             'Comma-separated list of allowed CORS origins (REQUIRED in production)',
         });
+      } else if (corsOrigins === 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD') {
+        warnings.push(
+          `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value. Update it immediately in your deployment platform (e.g., Render Dashboard → Environment).`,
+        );
       }
     }
 

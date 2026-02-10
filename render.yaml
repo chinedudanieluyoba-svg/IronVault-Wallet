@@ -22,14 +22,16 @@ services:
         value: production
       
       # Database Connection (linked to database below)
+      # IMPORTANT: Update this placeholder value in Render Dashboard → Environment after first deployment
+      # The database connection string will be available in the Database service details
       - key: DATABASE_URL_PROD
-        fromDatabase:
-          name: cryptowallet-db-prod
-          property: connectionString
+        value: PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD
       
-      # JWT Authentication (auto-generated on first deploy)
+      # JWT Authentication
+      # IMPORTANT: Update this placeholder value in Render Dashboard → Environment after first deployment
+      # Generate a secure value with: openssl rand -base64 32
       - key: JWT_SECRET
-        generateValue: true  # Render generates a secure random value
+        value: PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD
       
       # Payment Provider Secrets (must be set manually in Render Dashboard)
       # These contain sensitive API keys and cannot be in this file
@@ -73,14 +75,17 @@ databases:
     ipAllowList: []  # Empty = allow all Render services
 
 # After initial deployment:
-# 1. The app will start with placeholder values for MOONPAY_WEBHOOK_SECRET and CORS_ALLOWED_ORIGINS
+# 1. The app will start with placeholder values for DATABASE_URL_PROD, JWT_SECRET, MOONPAY_WEBHOOK_SECRET, and CORS_ALLOWED_ORIGINS
 # 2. Check the logs for "CRITICAL WARNING" messages about placeholder values
 # 3. Go to Render Dashboard → Your Service → Environment tab
-# 4. Update MOONPAY_WEBHOOK_SECRET with your actual MoonPay webhook secret
-# 5. Update CORS_ALLOWED_ORIGINS with your actual frontend domain(s)
-# 6. Click "Save Changes" - Render will automatically restart the service
-# 7. Verify DATABASE_URL_PROD is automatically populated
-# 8. Verify JWT_SECRET is automatically generated
+# 4. Update DATABASE_URL_PROD with the Internal Database URL from your PostgreSQL service
+#    - Go to your database service → Connection → Internal Database URL → Copy
+# 5. Update JWT_SECRET with a secure random value
+#    - Generate with: openssl rand -base64 32
+#    - Or use Render's "Generate" button
+# 6. Update MOONPAY_WEBHOOK_SECRET with your actual MoonPay webhook secret
+# 7. Update CORS_ALLOWED_ORIGINS with your actual frontend domain(s)
+# 8. Click "Save Changes" - Render will automatically restart the service
 #
 # To deploy:
 # 1. Commit this file to your repository

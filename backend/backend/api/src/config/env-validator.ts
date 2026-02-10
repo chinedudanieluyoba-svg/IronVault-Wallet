@@ -135,6 +135,10 @@ export class EnvironmentValidator {
           description:
             'Production PostgreSQL connection string (NODE_ENV=production)',
         });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_PROD is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     } else if (nodeEnv === 'staging') {
       dbUrl = process.env.DATABASE_URL_STAGING;
@@ -145,6 +149,10 @@ export class EnvironmentValidator {
           description:
             'Staging PostgreSQL connection string (NODE_ENV=staging)',
         });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_STAGING is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     } else {
       dbUrl = process.env.DATABASE_URL_DEV;
@@ -155,6 +163,10 @@ export class EnvironmentValidator {
           description:
             'Development PostgreSQL connection string (NODE_ENV=development)',
         });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_DEV is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     }
 
@@ -246,8 +258,12 @@ export class EnvironmentValidator {
 
     // Log environment info
     console.log(`📦 NODE_ENV: ${process.env.NODE_ENV}`);
-    console.log(`🗄️  DATABASE: ${this.maskConnectionString(dbUrl!)}`);
-    console.log(`🔐 JWT_SECRET: ${this.maskSecret(process.env.JWT_SECRET!)}`);
+    if (dbUrl) {
+      console.log(`🗄️  DATABASE: ${this.maskConnectionString(dbUrl)}`);
+    }
+    if (process.env.JWT_SECRET) {
+      console.log(`🔐 JWT_SECRET: ${this.maskSecret(process.env.JWT_SECRET)}`);
+    }
     console.log('');
   }
 

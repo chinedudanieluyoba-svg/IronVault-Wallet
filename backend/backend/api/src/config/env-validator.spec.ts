@@ -115,4 +115,36 @@ describe('EnvironmentValidator', () => {
 
     expect(() => EnvironmentValidator.validate()).not.toThrow();
   });
+
+  it('should accept placeholder values but log warnings for MOONPAY_WEBHOOK_SECRET', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.DATABASE_URL_DEV = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.MOONPAY_WEBHOOK_SECRET = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
+
+    // Should not throw, but will log a warning
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+  });
+
+  it('should accept placeholder values but log warnings for CORS_ALLOWED_ORIGINS in production', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.DATABASE_URL_PROD = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.MOONPAY_WEBHOOK_SECRET = 'moonpay-secret';
+    process.env.CORS_ALLOWED_ORIGINS = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
+
+    // Should not throw, but will log a warning
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+  });
+
+  it('should accept placeholder values but log warnings for both secrets in production', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.DATABASE_URL_PROD = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.MOONPAY_WEBHOOK_SECRET = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
+    process.env.CORS_ALLOWED_ORIGINS = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
+
+    // Should not throw, but will log warnings for both
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+  });
 });

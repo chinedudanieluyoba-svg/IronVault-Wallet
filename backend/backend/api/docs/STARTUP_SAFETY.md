@@ -105,3 +105,11 @@ See:
 - Log secrets to console
 - Commit `.env` to Git
 - Share `.env` files via chat/email
+
+## Production Deployment
+
+For production deployment on Render (or other platforms), see:
+- [**Deployment Guide (Render)**](./DEPLOYMENT_RENDER.md) - Complete setup instructions
+- [**Quick Fix Guide**](./DEPLOYMENT_QUICKFIX.md) - Troubleshoot deployment errors
+
+These guides explain how to set environment variables on deployment platforms.

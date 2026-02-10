@@ -74,6 +74,7 @@ curl http://localhost:3000/wallet/<wallet-id>/balance \
 |----------|-------------|
 | [Architecture](./docs/ARCHITECTURE.md) | System design, data flows, and deployment |
 | [API Reference](./docs/API_REFERENCE.md) | Complete REST API documentation |
+| [**Deployment Guide (Render)**](./docs/DEPLOYMENT_RENDER.md) | **Step-by-step production deployment** |
 | [Database Safety](./docs/DATABASE_SAFETY.md) | Migration procedures and backup strategy |
 | [Secrets Management](./docs/SECRETS_AND_ACCESS_CONTROL.md) | Security controls and rotation procedures |
 | [Rate Limiting](./docs/RATE_LIMITING.md) | Abuse protection and rate limit configuration |
@@ -371,27 +372,63 @@ See [API_REFERENCE.md](./docs/API_REFERENCE.md) for complete documentation.
 
 ## 🚢 Deployment
 
+### Deployment Guides
+
+Choose your deployment platform:
+
+- **[Render](./docs/DEPLOYMENT_RENDER.md)** - Easiest setup, managed PostgreSQL, free tier available
+- **[Docker](./docs/ARCHITECTURE.md)** - Self-hosted, full control
+- **[Kubernetes](./docs/ARCHITECTURE.md)** - Enterprise scale, complex setup
+
+### Quick Deploy to Render
+
+1. **One-Click Deploy**: Use `render.yaml` (in repository root)
+   ```bash
+   # Commit render.yaml to your repo (already included)
+   git push origin main
+   
+   # Go to Render Dashboard → New → Blueprint
+   # Connect repository → Render creates everything automatically
+   ```
+
+2. **Manual Setup**: Follow [Render Deployment Guide](./docs/DEPLOYMENT_RENDER.md)
+
 ### Production Checklist
 
-- [ ] Environment variables configured
-- [ ] Database migrations deployed
-- [ ] SSL certificates installed
-- [ ] CORS origins configured
-- [ ] Webhook IP allowlist set
+- [ ] Environment variables configured (see [Render Guide](./docs/DEPLOYMENT_RENDER.md))
+- [ ] Database migrations deployed (`npm run migrate:deploy`)
+- [ ] SSL certificates installed (automatic on Render)
+- [ ] CORS origins configured (`CORS_ALLOWED_ORIGINS`)
+- [ ] Webhook IP allowlist set (optional: `WEBHOOK_ALLOWED_IPS`)
 - [ ] Secrets rotation dates tracked
 - [ ] Backup automation enabled
-- [ ] Health check endpoints verified
+- [ ] Health check endpoints verified (`/health`, `/ready`)
 - [ ] Alert notifications configured
 - [ ] Admin accounts created
+
+### Required Environment Variables
+
+For production deployment, you **must** set these variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment | `production` |
+| `DATABASE_URL_PROD` | PostgreSQL connection | `postgresql://user:pass@host/db` |
+| `JWT_SECRET` | JWT signing secret | Generate: `openssl rand -base64 32` |
+| `MOONPAY_WEBHOOK_SECRET` | MoonPay webhook secret | From MoonPay dashboard |
+| `CORS_ALLOWED_ORIGINS` | Allowed frontend domains | `https://app.yourdomain.com` |
+
+**See [Deployment Guide](./docs/DEPLOYMENT_RENDER.md) for complete setup instructions.**
 
 ### Docker Deployment
 
 ```dockerfile
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 COPY . .
+RUN npm run prisma:generate
 RUN npm run build
 CMD ["npm", "run", "start:prod"]
 ```

@@ -1,24 +1,24 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { AuditLogger } from '../common/logging/audit.logger'
-import { DeadLetterQueueService } from './dead-letter-queue.service'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditLogger } from '../common/logging/audit.logger';
+import { DeadLetterQueueService } from './dead-letter-queue.service';
 
 export interface WebhookRetryResult {
-  webhookId: string
-  provider: string
-  externalId: string
-  retryCount: number
-  maxRetries: number
-  success: boolean
-  error?: string
+  webhookId: string;
+  provider: string;
+  externalId: string;
+  retryCount: number;
+  maxRetries: number;
+  success: boolean;
+  error?: string;
 }
 
 export interface WebhookRetryBatchResult {
-  attempts: number
-  successes: number
-  failures: number
-  movedToDeadLetter: number
-  results: WebhookRetryResult[]
+  attempts: number;
+  successes: number;
+  failures: number;
+  movedToDeadLetter: number;
+  results: WebhookRetryResult[];
 }
 
 /**
@@ -28,7 +28,7 @@ export interface WebhookRetryBatchResult {
  */
 @Injectable()
 export class WebhookRetryService {
-  private readonly maxRetries = Number(process.env.WEBHOOK_MAX_RETRIES ?? '3')
+  private readonly maxRetries = Number(process.env.WEBHOOK_MAX_RETRIES ?? '3');
 
   constructor(
     private prisma: PrismaService,
@@ -52,24 +52,24 @@ export class WebhookRetryService {
       },
       orderBy: { receivedAt: 'asc' }, // Will change to lastRetryAt after migration
       take: 100, // Process in batches
-    })
+    });
 
-    const results: WebhookRetryResult[] = []
-    let successes = 0
-    let failures = 0
-    let movedToDeadLetter = 0
+    const results: WebhookRetryResult[] = [];
+    let successes = 0;
+    let failures = 0;
+    let movedToDeadLetter = 0;
 
     for (const webhook of failedWebhooks) {
       try {
-        const webhookWithRetry = webhook as any // Cast to include new fields after migration
-        const currentRetryCount = webhookWithRetry.retryCount ?? 0
-        const newRetryCount = currentRetryCount + 1
+        const webhookWithRetry = webhook as any; // Cast to include new fields after migration
+        const currentRetryCount = webhookWithRetry.retryCount ?? 0;
+        const newRetryCount = currentRetryCount + 1;
 
         // Check if we've exhausted retries
         if (newRetryCount >= this.maxRetries) {
           // Move to dead-letter queue
-          await this.moveToDeadLetter(webhook.id)
-          movedToDeadLetter++
+          await this.moveToDeadLetter(webhook.id);
+          movedToDeadLetter++;
 
           this.auditLogger.error(
             { webhookId: webhook.id },
@@ -79,8 +79,8 @@ export class WebhookRetryService {
               provider: webhook.provider,
               externalId: webhook.externalId,
               retries: newRetryCount,
-            }
-          )
+            },
+          );
 
           results.push({
             webhookId: webhook.id,
@@ -90,11 +90,11 @@ export class WebhookRetryService {
             maxRetries: this.maxRetries,
             success: false,
             error: 'Moved to dead-letter after max retries',
-          })
+          });
         } else {
           // Queue for retry in next cycle
-          await this.retryWebhookEvent(webhook.id)
-          successes++
+          await this.retryWebhookEvent(webhook.id);
+          successes++;
 
           results.push({
             webhookId: webhook.id,
@@ -104,10 +104,10 @@ export class WebhookRetryService {
             maxRetries: this.maxRetries,
             success: true,
             error: 'Retry scheduled for processing',
-          })
+          });
         }
       } catch (error) {
-        failures++
+        failures++;
 
         results.push({
           webhookId: webhook.id,
@@ -117,7 +117,7 @@ export class WebhookRetryService {
           maxRetries: this.maxRetries,
           success: false,
           error: error.message,
-        })
+        });
       }
     }
 
@@ -127,7 +127,7 @@ export class WebhookRetryService {
       failures,
       movedToDeadLetter,
       results,
-    }
+    };
   }
 
   /**
@@ -139,10 +139,10 @@ export class WebhookRetryService {
   async retryWebhookEvent(webhookId: string): Promise<boolean> {
     const webhook = await this.prisma.webhookEvent.findUnique({
       where: { id: webhookId },
-    })
+    });
 
     if (!webhook) {
-      throw new Error('Webhook not found')
+      throw new Error('Webhook not found');
     }
 
     // Increment retry count and update last retry timestamp
@@ -158,10 +158,10 @@ export class WebhookRetryService {
         // Keep status as-is; let actual processor decide if it succeeds
         // Status will be 'failed' or 'pending' depending on previous attempt
       },
-    })
+    });
     // Return true to indicate retry was queued
     // Actual success depends on webhook processor picking it up
-    return true
+    return true;
   }
 
   /**
@@ -170,14 +170,14 @@ export class WebhookRetryService {
   async moveToDeadLetter(webhookId: string): Promise<void> {
     const webhook = await this.prisma.webhookEvent.findUnique({
       where: { id: webhookId },
-    })
+    });
 
     if (!webhook) {
-      throw new Error('Webhook not found')
+      throw new Error('Webhook not found');
     }
 
     // Add to DLQ service
-    const webhookWithRetry = webhook as any
+    const webhookWithRetry = webhook as any;
     await this.dlqService.addToQueue(
       webhook.externalId,
       'webhook',
@@ -186,8 +186,8 @@ export class WebhookRetryService {
       webhookWithRetry.retryCount ?? 0,
       this.maxRetries,
       webhook.errorMessage || undefined,
-      { provider: webhook.provider } // Basic payload info
-    )
+      { provider: webhook.provider }, // Basic payload info
+    );
 
     // Update webhook event status
     // Cast to any because new fields aren't in Prisma types yet (pre-migration)
@@ -197,7 +197,7 @@ export class WebhookRetryService {
         status: 'dead_letter',
         deadLetterAt: new Date(),
       },
-    })
+    });
   }
 
   /**
@@ -205,7 +205,7 @@ export class WebhookRetryService {
    */
   async getDeadLetterWebhooks(
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ webhooks: any[]; total: number }> {
     const [webhooks, total] = await Promise.all([
       (this.prisma.webhookEvent.findMany as any)({
@@ -215,25 +215,28 @@ export class WebhookRetryService {
         skip: offset,
       }),
       this.prisma.webhookEvent.count({ where: { status: 'dead_letter' } }),
-    ])
+    ]);
 
-    return { webhooks, total }
+    return { webhooks, total };
   }
 
   /**
    * Manually retry a dead-letter webhook (admin action)
    */
-  async manuallyRetryDeadLetter(webhookId: string, adminId: string): Promise<void> {
+  async manuallyRetryDeadLetter(
+    webhookId: string,
+    adminId: string,
+  ): Promise<void> {
     const webhook = await this.prisma.webhookEvent.findUnique({
       where: { id: webhookId },
-    })
+    });
 
     if (!webhook) {
-      throw new Error('Webhook not found')
+      throw new Error('Webhook not found');
     }
 
     if (webhook.status !== 'dead_letter') {
-      throw new Error('Webhook is not in dead-letter status')
+      throw new Error('Webhook is not in dead-letter status');
     }
 
     // Reset retry state and try again
@@ -246,7 +249,7 @@ export class WebhookRetryService {
         retryCount: 0, // Reset counter for fresh attempt
         lastRetryAt: new Date(),
       },
-    })
+    });
 
     this.auditLogger.audit(
       { adminId, webhookId },
@@ -254,7 +257,7 @@ export class WebhookRetryService {
       {
         provider: webhook.provider,
         externalId: webhook.externalId,
-      }
-    )
+      },
+    );
   }
 }

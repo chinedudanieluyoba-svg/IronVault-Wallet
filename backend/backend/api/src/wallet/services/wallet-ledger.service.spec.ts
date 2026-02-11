@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { WalletLedgerService } from './wallet-ledger.service'
-import { PrismaService } from '../../prisma/prisma.service'
+import { Test, TestingModule } from '@nestjs/testing';
+import { WalletLedgerService } from './wallet-ledger.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('WalletLedgerService', () => {
-  let service: WalletLedgerService
-  let prismaService: PrismaService
+  let service: WalletLedgerService;
+  let prismaService: PrismaService;
 
   const mockPrismaService = {
     walletLedgerEntry: {
@@ -13,21 +13,21 @@ describe('WalletLedgerService', () => {
       count: jest.fn(),
       aggregate: jest.fn(),
     },
-  }
+  };
 
   beforeEach(async () => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WalletLedgerService,
         { provide: PrismaService, useValue: mockPrismaService },
       ],
-    }).compile()
+    }).compile();
 
-    service = module.get<WalletLedgerService>(WalletLedgerService)
-    prismaService = module.get<PrismaService>(PrismaService)
-  })
+    service = module.get<WalletLedgerService>(WalletLedgerService);
+    prismaService = module.get<PrismaService>(PrismaService);
+  });
 
   describe('recordEntry', () => {
     it('should record immutable ledger entry', async () => {
@@ -41,7 +41,7 @@ describe('WalletLedgerService', () => {
         reference: 'onramp_123',
         description: 'MoonPay deposit',
         createdAt: new Date(),
-      })
+      });
 
       const result = await service.recordEntry(
         'wallet_1',
@@ -51,14 +51,14 @@ describe('WalletLedgerService', () => {
         100,
         'onramp_123',
         'MoonPay deposit',
-      )
+      );
 
-      expect(result.id).toBe('entry_1')
-      expect(result.type).toBe('deposit')
-      expect(result.amount).toBe(100)
-      expect(result.balanceAfter).toBe(100)
-    })
-  })
+      expect(result.id).toBe('entry_1');
+      expect(result.type).toBe('deposit');
+      expect(result.amount).toBe(100);
+      expect(result.balanceAfter).toBe(100);
+    });
+  });
 
   describe('getEntries', () => {
     it('should retrieve entries ordered by creation time', async () => {
@@ -81,12 +81,12 @@ describe('WalletLedgerService', () => {
           balanceAfter: 100,
           createdAt: new Date('2026-02-06T09:00:00Z'),
         },
-      ])
+      ]);
 
-      const result = await service.getEntries('wallet_1', 50, 0)
+      const result = await service.getEntries('wallet_1', 50, 0);
 
-      expect(result).toHaveLength(2)
-      expect(result[0].id).toBe('entry_2') // Newest first
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('entry_2'); // Newest first
       expect(mockPrismaService.walletLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { walletId: 'wallet_1' },
@@ -94,22 +94,22 @@ describe('WalletLedgerService', () => {
           take: 50,
           skip: 0,
         }),
-      )
-    })
+      );
+    });
 
     it('should support pagination', async () => {
-      mockPrismaService.walletLedgerEntry.findMany.mockResolvedValue([])
+      mockPrismaService.walletLedgerEntry.findMany.mockResolvedValue([]);
 
-      await service.getEntries('wallet_1', 25, 100)
+      await service.getEntries('wallet_1', 25, 100);
 
       expect(mockPrismaService.walletLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           take: 25,
           skip: 100,
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe('getEntriesByType', () => {
     it('should filter entries by type', async () => {
@@ -124,11 +124,11 @@ describe('WalletLedgerService', () => {
           type: 'deposit',
           amount: 200,
         },
-      ])
+      ]);
 
-      const result = await service.getEntriesByType('wallet_1', 'deposit', 50)
+      const result = await service.getEntriesByType('wallet_1', 'deposit', 50);
 
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(2);
       expect(mockPrismaService.walletLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -136,19 +136,19 @@ describe('WalletLedgerService', () => {
             type: 'deposit',
           },
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe('getEntryCount', () => {
     it('should return total entry count for wallet', async () => {
-      mockPrismaService.walletLedgerEntry.count.mockResolvedValue(42)
+      mockPrismaService.walletLedgerEntry.count.mockResolvedValue(42);
 
-      const count = await service.getEntryCount('wallet_1')
+      const count = await service.getEntryCount('wallet_1');
 
-      expect(count).toBe(42)
-    })
-  })
+      expect(count).toBe(42);
+    });
+  });
 
   describe('getTotalDebits', () => {
     it('should sum all outgoing transactions', async () => {
@@ -156,11 +156,11 @@ describe('WalletLedgerService', () => {
         _sum: {
           amount: 350,
         },
-      })
+      });
 
-      const total = await service.getTotalDebits('wallet_1')
+      const total = await service.getTotalDebits('wallet_1');
 
-      expect(total).toBe(350)
+      expect(total).toBe(350);
       expect(
         mockPrismaService.walletLedgerEntry.aggregate,
       ).toHaveBeenCalledWith(
@@ -172,21 +172,21 @@ describe('WalletLedgerService', () => {
             },
           },
         }),
-      )
-    })
+      );
+    });
 
     it('should return 0 if no debits', async () => {
       mockPrismaService.walletLedgerEntry.aggregate.mockResolvedValue({
         _sum: {
           amount: null,
         },
-      })
+      });
 
-      const total = await service.getTotalDebits('wallet_1')
+      const total = await service.getTotalDebits('wallet_1');
 
-      expect(total).toBe(0)
-    })
-  })
+      expect(total).toBe(0);
+    });
+  });
 
   describe('getTotalCredits', () => {
     it('should sum all incoming transactions', async () => {
@@ -194,11 +194,11 @@ describe('WalletLedgerService', () => {
         _sum: {
           amount: 1000,
         },
-      })
+      });
 
-      const total = await service.getTotalCredits('wallet_1')
+      const total = await service.getTotalCredits('wallet_1');
 
-      expect(total).toBe(1000)
+      expect(total).toBe(1000);
       expect(
         mockPrismaService.walletLedgerEntry.aggregate,
       ).toHaveBeenCalledWith(
@@ -210,7 +210,7 @@ describe('WalletLedgerService', () => {
             },
           },
         }),
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});

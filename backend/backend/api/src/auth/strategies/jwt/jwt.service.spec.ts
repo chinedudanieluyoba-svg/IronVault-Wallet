@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtStrategy } from './jwt.service';
 
@@ -18,7 +17,8 @@ describe('JwtService', () => {
 
   afterEach(() => {
     // Clean up
-    delete process.env.JWT_SECRET;  });
+    delete process.env.JWT_SECRET;
+  });
 
   it('should be defined', () => {
     expect(strategy).toBeDefined();

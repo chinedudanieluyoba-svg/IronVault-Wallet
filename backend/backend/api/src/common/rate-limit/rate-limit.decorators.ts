@@ -10,19 +10,23 @@ import { RATE_LIMIT_CONFIG } from './rate-limit.config';
 export const RateLimitAuth = () => RateLimit(RATE_LIMIT_CONFIG.AUTH);
 
 // Wallet read endpoints (GET): 30 req/min
-export const RateLimitWalletRead = () => RateLimit(RATE_LIMIT_CONFIG.WALLET_READ);
+export const RateLimitWalletRead = () =>
+  RateLimit(RATE_LIMIT_CONFIG.WALLET_READ);
 
 // Wallet write endpoints (POST/PUT/DELETE): 10 req/min
-export const RateLimitWalletWrite = () => RateLimit(RATE_LIMIT_CONFIG.WALLET_WRITE);
+export const RateLimitWalletWrite = () =>
+  RateLimit(RATE_LIMIT_CONFIG.WALLET_WRITE);
 
 // Transaction endpoints: 20 req/min
-export const RateLimitTransaction = () => RateLimit(RATE_LIMIT_CONFIG.TRANSACTION);
+export const RateLimitTransaction = () =>
+  RateLimit(RATE_LIMIT_CONFIG.TRANSACTION);
 
 // OnRamp endpoints: 15 req/min
 export const RateLimitOnRamp = () => RateLimit(RATE_LIMIT_CONFIG.ONRAMP);
 
 // Admin emergency actions (manual credit): 2 req/min (STRICTLY CONTROLLED)
-export const RateLimitAdminEmergency = () => RateLimit(RATE_LIMIT_CONFIG.ADMIN_EMERGENCY);
+export const RateLimitAdminEmergency = () =>
+  RateLimit(RATE_LIMIT_CONFIG.ADMIN_EMERGENCY);
 
 // Webhooks: No rate limiting (IP + signature gated)
 export const RateLimitWebhook = () => RateLimit(null);

@@ -1,11 +1,21 @@
-import { Controller, Post, Get, Body, UseGuards, Req, Param, ForbiddenException, BadRequestException } from '@nestjs/common'
-import { TransactionService, TransactionType } from './transaction.service'
-import { JwtAuthGuard } from '../auth/jwt/jwt.guard'
-import { RolesGuard } from '../auth/roles.guard'
-import { Role } from '../auth/roles.enum'
-import { CreateTransactionDto } from './dto/create-transaction.dto'
-import { RateLimitTransaction } from '../common/rate-limit/rate-limit.decorators'
-import { PrismaService } from '../prisma/prisma.service'
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Req,
+  Param,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import { TransactionService, TransactionType } from './transaction.service';
+import { JwtAuthGuard } from '../auth/jwt/jwt.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../auth/roles.enum';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { RateLimitTransaction } from '../common/rate-limit/rate-limit.decorators';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('transaction')
 @UseGuards(RolesGuard)
@@ -38,7 +48,9 @@ export class TransactionController {
         userId: req.user.userId,
       });
     } catch (error: any) {
-      throw new BadRequestException(error.message || 'Invalid transaction data');
+      throw new BadRequestException(
+        error.message || 'Invalid transaction data',
+      );
     }
   }
 
@@ -54,7 +66,7 @@ export class TransactionController {
       walletId,
       req.user.userId,
       req.user.role,
-    )
+    );
   }
 
   /**
@@ -69,7 +81,6 @@ export class TransactionController {
       walletId,
       req.user.userId,
       req.user.role,
-    )
+    );
   }
 }
-

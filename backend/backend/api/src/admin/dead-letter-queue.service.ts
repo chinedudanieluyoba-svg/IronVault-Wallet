@@ -1,22 +1,22 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { AuditLogger } from '../common/logging/audit.logger'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditLogger } from '../common/logging/audit.logger';
 
 export interface DeadLetterItem {
-  id: string
-  eventId: string
-  eventType: string
-  provider: string
-  reason: string
-  lastError: string | null
-  retryCount: number
-  maxRetries: number
-  status: string
-  createdAt: Date
-  resolvedAt: Date | null
-  resolution: string | null
-  notes: string | null
-  payload: any
+  id: string;
+  eventId: string;
+  eventType: string;
+  provider: string;
+  reason: string;
+  lastError: string | null;
+  retryCount: number;
+  maxRetries: number;
+  status: string;
+  createdAt: Date;
+  resolvedAt: Date | null;
+  resolution: string | null;
+  notes: string | null;
+  payload: any;
 }
 
 /**
@@ -42,7 +42,7 @@ export class DeadLetterQueueService {
     retryCount: number,
     maxRetries: number,
     lastError?: string,
-    payload?: any
+    payload?: any,
   ): Promise<string> {
     const item = await this.prisma.deadLetterQueue.create({
       data: {
@@ -56,7 +56,7 @@ export class DeadLetterQueueService {
         payload,
         status: 'pending',
       },
-    })
+    });
 
     this.auditLogger.error(
       { eventId, eventType },
@@ -67,10 +67,10 @@ export class DeadLetterQueueService {
         reason,
         retries: retryCount,
         error: lastError,
-      }
-    )
+      },
+    );
 
-    return item.id
+    return item.id;
   }
 
   /**
@@ -78,7 +78,7 @@ export class DeadLetterQueueService {
    */
   async getPending(
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ items: DeadLetterItem[]; total: number }> {
     const [items, total] = await Promise.all([
       this.prisma.deadLetterQueue.findMany({
@@ -88,9 +88,9 @@ export class DeadLetterQueueService {
         skip: offset,
       }),
       this.prisma.deadLetterQueue.count({ where: { status: 'pending' } }),
-    ])
+    ]);
 
-    return { items, total }
+    return { items, total };
   }
 
   /**
@@ -99,7 +99,7 @@ export class DeadLetterQueueService {
   async getByStatus(
     status: string,
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ items: DeadLetterItem[]; total: number }> {
     const [items, total] = await Promise.all([
       this.prisma.deadLetterQueue.findMany({
@@ -109,9 +109,9 @@ export class DeadLetterQueueService {
         skip: offset,
       }),
       this.prisma.deadLetterQueue.count({ where: { status } }),
-    ])
+    ]);
 
-    return { items, total }
+    return { items, total };
   }
 
   /**
@@ -120,7 +120,7 @@ export class DeadLetterQueueService {
   async getByProvider(
     provider: string,
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ items: DeadLetterItem[]; total: number }> {
     const [items, total] = await Promise.all([
       this.prisma.deadLetterQueue.findMany({
@@ -129,10 +129,12 @@ export class DeadLetterQueueService {
         take: limit,
         skip: offset,
       }),
-      this.prisma.deadLetterQueue.count({ where: { provider, status: 'pending' } }),
-    ])
+      this.prisma.deadLetterQueue.count({
+        where: { provider, status: 'pending' },
+      }),
+    ]);
 
-    return { items, total }
+    return { items, total };
   }
 
   /**
@@ -142,14 +144,14 @@ export class DeadLetterQueueService {
     dlqId: string,
     resolution: 'manual_replay' | 'manual_credit' | 'cancelled',
     notes?: string,
-    adminId?: string
+    adminId?: string,
   ): Promise<void> {
     const item = await this.prisma.deadLetterQueue.findUnique({
       where: { id: dlqId },
-    })
+    });
 
     if (!item) {
-      throw new Error('Dead-letter item not found')
+      throw new Error('Dead-letter item not found');
     }
 
     await this.prisma.deadLetterQueue.update({
@@ -160,16 +162,12 @@ export class DeadLetterQueueService {
         resolvedAt: new Date(),
         notes: notes || `Resolved by ${adminId}`,
       },
-    })
+    });
 
-    this.auditLogger.audit(
-      { adminId, dlqId },
-      'Dead-letter item resolved',
-      {
-        eventId: item.eventId,
-        resolution,
-      }
-    )
+    this.auditLogger.audit({ adminId, dlqId }, 'Dead-letter item resolved', {
+      eventId: item.eventId,
+      resolution,
+    });
   }
 
   /**
@@ -181,42 +179,44 @@ export class DeadLetterQueueService {
       data: {
         status: 'archived',
       },
-    })
+    });
   }
 
   /**
    * Get summary stats
    */
   async getStats(): Promise<{
-    pending: number
-    resolved: number
-    archived: number
-    byProvider: { [key: string]: number }
+    pending: number;
+    resolved: number;
+    archived: number;
+    byProvider: { [key: string]: number };
   }> {
     const [pending, resolved, archived, byProvider] = await Promise.all([
       this.prisma.deadLetterQueue.count({ where: { status: 'pending' } }),
-      this.prisma.deadLetterQueue.count({ where: { status: 'manual_reviewed' } }),
+      this.prisma.deadLetterQueue.count({
+        where: { status: 'manual_reviewed' },
+      }),
       this.prisma.deadLetterQueue.count({ where: { status: 'archived' } }),
       this.prisma.deadLetterQueue.groupBy({
         by: ['provider'],
         where: { status: 'pending' },
         _count: true,
       }),
-    ])
+    ]);
 
     const providerMap = byProvider.reduce(
       (acc, item) => {
-        acc[item.provider] = item._count
-        return acc
+        acc[item.provider] = item._count;
+        return acc;
       },
-      {} as { [key: string]: number }
-    )
+      {} as { [key: string]: number },
+    );
 
     return {
       pending,
       resolved,
       archived,
       byProvider: providerMap,
-    }
+    };
   }
 }

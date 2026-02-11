@@ -43,7 +43,9 @@ describe('ConcurrencyLockService', () => {
       expect(mockPrisma.$queryRaw).toHaveBeenCalled();
       // Verify the query contains FOR UPDATE
       const callArgs = mockPrisma.$queryRaw.mock.calls[0];
-      const query = callArgs[0].join ? callArgs[0].join('') : callArgs[0].toString();
+      const query = callArgs[0].join
+        ? callArgs[0].join('')
+        : callArgs[0].toString();
       expect(query).toContain('FOR UPDATE');
     });
 
@@ -51,7 +53,9 @@ describe('ConcurrencyLockService', () => {
       mockPrisma.$queryRaw.mockResolvedValue([]);
       const tx: any = { $queryRaw: mockPrisma.$queryRaw };
 
-      await expect(service.lockWallet(tx, 'nonexistent')).rejects.toThrow('Wallet nonexistent not found');
+      await expect(service.lockWallet(tx, 'nonexistent')).rejects.toThrow(
+        'Wallet nonexistent not found',
+      );
     });
   });
 
@@ -62,7 +66,7 @@ describe('ConcurrencyLockService', () => {
 
       // Mock returns wallets in order they're requested
       mockPrisma.$queryRaw
-        .mockResolvedValueOnce([wallet1])  // First call for wallet_1 (sorted first)
+        .mockResolvedValueOnce([wallet1]) // First call for wallet_1 (sorted first)
         .mockResolvedValueOnce([wallet3]); // Second call for wallet_3
 
       const tx: any = { $queryRaw: mockPrisma.$queryRaw };
@@ -80,9 +84,9 @@ describe('ConcurrencyLockService', () => {
         .mockResolvedValueOnce([]); // Second wallet not found
       const tx: any = { $queryRaw: mockPrisma.$queryRaw };
 
-      await expect(service.lockWallets(tx, ['wallet_1', 'wallet_2'])).rejects.toThrow(
-        'not found',
-      );
+      await expect(
+        service.lockWallets(tx, ['wallet_1', 'wallet_2']),
+      ).rejects.toThrow('not found');
     });
   });
 
@@ -92,11 +96,15 @@ describe('ConcurrencyLockService', () => {
       mockPrisma.$executeRaw.mockResolvedValue(undefined); // SET lock_timeout
       mockPrisma.$queryRaw.mockResolvedValue([mockWallet]); // SELECT FOR UPDATE
 
-      const tx: any = { 
+      const tx: any = {
         $executeRaw: mockPrisma.$executeRaw,
-        $queryRaw: mockPrisma.$queryRaw 
+        $queryRaw: mockPrisma.$queryRaw,
       };
-      const result = await service.lockWalletWithTimeout(tx, 'wallet_123', 3000);
+      const result = await service.lockWalletWithTimeout(
+        tx,
+        'wallet_123',
+        3000,
+      );
 
       expect(result).toEqual(mockWallet);
       expect(mockPrisma.$executeRaw).toHaveBeenCalled();
@@ -108,14 +116,14 @@ describe('ConcurrencyLockService', () => {
       mockPrisma.$executeRaw.mockResolvedValue(undefined);
       mockPrisma.$queryRaw.mockRejectedValue(timeoutError);
 
-      const tx: any = { 
+      const tx: any = {
         $executeRaw: mockPrisma.$executeRaw,
-        $queryRaw: mockPrisma.$queryRaw 
+        $queryRaw: mockPrisma.$queryRaw,
       };
 
-      await expect(service.lockWalletWithTimeout(tx, 'wallet_123', 1000)).rejects.toThrow(
-        'Failed to acquire lock',
-      );
+      await expect(
+        service.lockWalletWithTimeout(tx, 'wallet_123', 1000),
+      ).rejects.toThrow('Failed to acquire lock');
     });
   });
 

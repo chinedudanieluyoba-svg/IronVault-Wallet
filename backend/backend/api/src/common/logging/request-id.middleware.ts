@@ -13,7 +13,7 @@ export class RequestIdMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     // Generate or extract request ID
-    const requestId = req.headers['x-request-id'] as string || uuidv4();
+    const requestId = (req.headers['x-request-id'] as string) || uuidv4();
 
     // Store in context storage
     this.requestIdStorage.setRequestId(requestId);

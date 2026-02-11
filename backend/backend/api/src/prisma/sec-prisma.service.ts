@@ -1,7 +1,7 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
-import { PrismaNeon } from '@prisma/adapter-neon'
-import { Pool } from '@neondatabase/serverless'
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import { Pool } from '@neondatabase/serverless';
 
 @Injectable()
 export class SecPrismaService
@@ -23,20 +23,20 @@ export class SecPrismaService
     const pool = new Pool({
       connectionString: dbUrl,
       ssl: { rejectUnauthorized: false },
-    })
+    });
 
     super({
       adapter: new PrismaNeon(pool as any),
-    })
+    });
   }
 
   async onModuleInit() {
-    await this.$connect()
-    console.log('✅ Sec Prisma connected')
+    await this.$connect();
+    console.log('✅ Sec Prisma connected');
   }
 
   async onModuleDestroy() {
-    await this.$disconnect()
-    console.log('🛑 Sec Prisma disconnected')
+    await this.$disconnect();
+    console.log('🛑 Sec Prisma disconnected');
   }
 }

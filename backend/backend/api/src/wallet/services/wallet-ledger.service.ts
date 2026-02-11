@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../../prisma/prisma.service'
-import { LedgerEntryType, WalletLedgerEntry } from '../types/wallet.types'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LedgerEntryType, WalletLedgerEntry } from '../types/wallet.types';
 
 /**
  * Wallet Ledger Service
@@ -34,7 +34,7 @@ export class WalletLedgerService {
         reference,
         description,
       },
-    })
+    });
   }
 
   /**
@@ -51,7 +51,7 @@ export class WalletLedgerService {
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset,
-    })
+    });
   }
 
   /**
@@ -69,7 +69,7 @@ export class WalletLedgerService {
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
-    })
+    });
   }
 
   /**
@@ -78,7 +78,7 @@ export class WalletLedgerService {
   async getEntryCount(walletId: string): Promise<number> {
     return this.prisma.walletLedgerEntry.count({
       where: { walletId },
-    })
+    });
   }
 
   /**
@@ -95,8 +95,8 @@ export class WalletLedgerService {
       _sum: {
         amount: true,
       },
-    })
-    return result._sum.amount || 0
+    });
+    return result._sum.amount || 0;
   }
 
   /**
@@ -113,7 +113,7 @@ export class WalletLedgerService {
       _sum: {
         amount: true,
       },
-    })
-    return result._sum.amount || 0
+    });
+    return result._sum.amount || 0;
   }
 }

@@ -8,24 +8,27 @@ import {
   Req,
   ForbiddenException,
   BadRequestException,
-} from '@nestjs/common'
-import { WalletService } from './wallet.service'
-import { WalletLedgerService } from './services/wallet-ledger.service'
-import { JwtAuthGuard } from '../auth/jwt/jwt.guard'
-import { Roles } from '../auth/roles.decorator'
-import { RolesGuard } from '../auth/roles.guard'
-import { Role } from '../auth/roles.enum'
-import { CreateWalletDto } from './dto/create-wallet.dto'
-import { CreditWalletDto } from './dto/credit-wallet.dto'
-import { DebitWalletDto } from './dto/debit-wallet.dto'
-import { RateLimitWalletRead, RateLimitWalletWrite } from '../common/rate-limit/rate-limit.decorators'
+} from '@nestjs/common';
+import { WalletService } from './wallet.service';
+import { WalletLedgerService } from './services/wallet-ledger.service';
+import { JwtAuthGuard } from '../auth/jwt/jwt.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../auth/roles.enum';
+import { CreateWalletDto } from './dto/create-wallet.dto';
+import { CreditWalletDto } from './dto/credit-wallet.dto';
+import { DebitWalletDto } from './dto/debit-wallet.dto';
+import {
+  RateLimitWalletRead,
+  RateLimitWalletWrite,
+} from '../common/rate-limit/rate-limit.decorators';
 import {
   CreateWalletInput,
   WalletResponse,
   CreditWalletInput,
   DebitWalletInput,
   LedgerEntryResponse,
-} from './types/wallet.types'
+} from './types/wallet.types';
 
 @Controller('wallets')
 @UseGuards(RolesGuard)
@@ -74,7 +77,7 @@ export class WalletController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMyWallet(@Req() req): Promise<WalletResponse> {
-    return this.walletService.getWalletByUserId(req.user.userId)
+    return this.walletService.getWalletByUserId(req.user.userId);
   }
 
   /**
@@ -86,15 +89,18 @@ export class WalletController {
   @RateLimitWalletRead()
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getWallet(@Param('id') walletId: string, @Req() req): Promise<WalletResponse> {
-    const wallet = await this.walletService.getWallet(walletId)
-    
+  async getWallet(
+    @Param('id') walletId: string,
+    @Req() req,
+  ): Promise<WalletResponse> {
+    const wallet = await this.walletService.getWallet(walletId);
+
     // Regular users can only access their own wallet
     if (req.user.role !== Role.ADMIN && wallet.userId !== req.user.userId) {
-      throw new ForbiddenException('You can only access your own wallet')
+      throw new ForbiddenException('You can only access your own wallet');
     }
-    
-    return wallet
+
+    return wallet;
   }
 
   /**
@@ -106,16 +112,19 @@ export class WalletController {
   @RateLimitWalletRead()
   @UseGuards(JwtAuthGuard)
   @Get(':id/balance')
-  async getBalance(@Param('id') walletId: string, @Req() req): Promise<{ balance: number }> {
-    const wallet = await this.walletService.getWallet(walletId)
-    
+  async getBalance(
+    @Param('id') walletId: string,
+    @Req() req,
+  ): Promise<{ balance: number }> {
+    const wallet = await this.walletService.getWallet(walletId);
+
     // Regular users can only access their own wallet
     if (req.user.role !== Role.ADMIN && wallet.userId !== req.user.userId) {
-      throw new ForbiddenException('You can only access your own wallet')
+      throw new ForbiddenException('You can only access your own wallet');
     }
-    
-    const balance = await this.walletService.getBalance(walletId)
-    return { balance }
+
+    const balance = await this.walletService.getBalance(walletId);
+    return { balance };
   }
 
   /**
@@ -135,16 +144,20 @@ export class WalletController {
     @Param('id') walletId: string,
     @Req() req,
   ): Promise<{ entries: LedgerEntryResponse[]; total: number }> {
-    const limit = Math.min(parseInt(req.query.limit || '50'), 100)
-    const offset = parseInt(req.query.offset || '0')
+    const limit = Math.min(parseInt(req.query.limit || '50'), 100);
+    const offset = parseInt(req.query.offset || '0');
 
-    const entries = await this.ledgerService.getEntries(walletId, limit, offset)
-    const total = await this.ledgerService.getEntryCount(walletId)
+    const entries = await this.ledgerService.getEntries(
+      walletId,
+      limit,
+      offset,
+    );
+    const total = await this.ledgerService.getEntryCount(walletId);
 
     return {
       entries: entries.map(this.mapLedgerEntry),
       total,
-    }
+    };
   }
 
   /**
@@ -169,7 +182,9 @@ export class WalletController {
         actorUserId: req.user.userId,
       });
     } catch (error: any) {
-      throw new BadRequestException(error.message || 'Invalid credit wallet data');
+      throw new BadRequestException(
+        error.message || 'Invalid credit wallet data',
+      );
     }
   }
 
@@ -194,7 +209,9 @@ export class WalletController {
         userId: req.user.userId,
       });
     } catch (error: any) {
-      throw new BadRequestException(error.message || 'Invalid debit wallet data');
+      throw new BadRequestException(
+        error.message || 'Invalid debit wallet data',
+      );
     }
   }
 
@@ -209,6 +226,6 @@ export class WalletController {
       reference: entry.reference,
       description: entry.description,
       createdAt: entry.createdAt,
-    }
+    };
   }
 }

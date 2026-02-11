@@ -10,7 +10,9 @@ export class CreateWalletDto {
     }
 
     if (!data.currency || !isValidCurrency(data.currency)) {
-      throw new Error(`currency must be one of: ${Object.values(Currency).join(', ')}`);
+      throw new Error(
+        `currency must be one of: ${Object.values(Currency).join(', ')}`,
+      );
     }
 
     this.userId = data.userId;

@@ -1,6 +1,11 @@
 import { validateAmount } from '../../common/validators/amount.validator';
 
-export type LedgerEntryType = 'deposit' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'trading';
+export type LedgerEntryType =
+  | 'deposit'
+  | 'withdrawal'
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'trading';
 
 export class CreditWalletDto {
   walletId: string;
@@ -19,7 +24,13 @@ export class CreditWalletDto {
       throw new Error(amountValidation.error);
     }
 
-    const validTypes: LedgerEntryType[] = ['deposit', 'withdrawal', 'transfer_in', 'transfer_out', 'trading'];
+    const validTypes: LedgerEntryType[] = [
+      'deposit',
+      'withdrawal',
+      'transfer_in',
+      'transfer_out',
+      'trading',
+    ];
     if (!data.type || !validTypes.includes(data.type)) {
       throw new Error(`type must be one of: ${validTypes.join(', ')}`);
     }

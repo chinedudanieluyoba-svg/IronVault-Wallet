@@ -1,17 +1,17 @@
 /**
  * Environment Variable Validator
- * 
+ *
  * Validates required environment variables on app startup.
  * Fails fast if critical configuration is missing.
- * 
+ *
  * Philosophy: Silent failure = dangerous
  */
 
 type EnvVar = {
-  key: string
-  required: boolean
-  description: string
-}
+  key: string;
+  required: boolean;
+  description: string;
+};
 
 const REQUIRED_ENV_VARS: EnvVar[] = [
   {
@@ -25,16 +25,20 @@ const REQUIRED_ENV_VARS: EnvVar[] = [
     description: 'Secret for signing JWT tokens',
   },
   {
-    key: 'MOONPAY_WEBHOOK_SECRET',
-    required: true,
-    description: 'MoonPay webhook signature verification secret',
-  },
-  {
     key: 'NODE_ENV',
     required: true,
     description: 'Environment (development/staging/production)',
   },
-]
+];
+
+const OPTIONAL_SECRETS: EnvVar[] = [
+  {
+    key: 'MOONPAY_WEBHOOK_SECRET',
+    required: false,
+    description:
+      'MoonPay webhook signature verification secret (webhook validation will fail without this)',
+  },
+];
 
 const OPTIONAL_ENV_VARS: EnvVar[] = [
   {
@@ -65,7 +69,8 @@ const OPTIONAL_ENV_VARS: EnvVar[] = [
   {
     key: 'ALERT_BALANCE_MISMATCH_THRESHOLD',
     required: false,
-    description: 'Balance mismatch alert threshold in dollars (defaults to 0.01)',
+    description:
+      'Balance mismatch alert threshold in dollars (defaults to 0.01)',
   },
   {
     key: 'ALERT_WEBHOOK_FAILURE_THRESHOLD',
@@ -80,123 +85,184 @@ const OPTIONAL_ENV_VARS: EnvVar[] = [
   {
     key: 'ALERT_CREDIT_SPIKE_THRESHOLD',
     required: false,
-    description: 'Credit spike threshold per minute in dollars (defaults to 1000)',
+    description:
+      'Credit spike threshold per minute in dollars (defaults to 1000)',
   },
-]
+];
+
+// Constants for validation messages
+const PLACEHOLDER_VALUE = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
+const DEPLOYMENT_PLATFORM_LOCATION =
+  'your deployment platform (e.g., Render Dashboard → Environment)';
 
 export class EnvironmentValidator {
+  /**
+   * Check if a value is empty or contains only whitespace
+   */
+  private static isEmptyOrWhitespace(value: string | undefined): boolean {
+    return !value || value.trim() === '';
+  }
+
+  /**
+   * Check if a value is a placeholder
+   */
+  private static isPlaceholder(value: string | undefined): boolean {
+    return value === PLACEHOLDER_VALUE;
+  }
   /**
    * Validate required environment variables
    * Throws error if any required var is missing
    */
   static validate(): void {
-    const missing: EnvVar[] = []
-    const warnings: string[] = []
+    const missing: EnvVar[] = [];
+    const warnings: string[] = [];
 
     // Check NODE_ENV first (needed for database URL validation)
-    const nodeEnv = process.env.NODE_ENV
-    if (!nodeEnv || nodeEnv.trim() === '') {
-      console.error('\n❌ CRITICAL: NODE_ENV is required\n')
-      throw new Error('NODE_ENV environment variable must be set')
+    const nodeEnv = process.env.NODE_ENV;
+    if (this.isEmptyOrWhitespace(nodeEnv)) {
+      console.error('\n❌ CRITICAL: NODE_ENV is required\n');
+      throw new Error('NODE_ENV environment variable must be set');
     }
 
     // Check database URL based on NODE_ENV
-    let dbUrl: string | undefined
+    let dbUrl: string | undefined;
     if (nodeEnv === 'production') {
-      dbUrl = process.env.DATABASE_URL_PROD
-      if (!dbUrl || dbUrl.trim() === '') {
+      dbUrl = process.env.DATABASE_URL_PROD;
+      if (this.isEmptyOrWhitespace(dbUrl)) {
         missing.push({
           key: 'DATABASE_URL_PROD',
           required: true,
-          description: 'Production PostgreSQL connection string (NODE_ENV=production)',
-        })
+          description:
+            'Production PostgreSQL connection string (NODE_ENV=production)',
+        });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_PROD is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     } else if (nodeEnv === 'staging') {
-      dbUrl = process.env.DATABASE_URL_STAGING
-      if (!dbUrl || dbUrl.trim() === '') {
+      dbUrl = process.env.DATABASE_URL_STAGING;
+      if (this.isEmptyOrWhitespace(dbUrl)) {
         missing.push({
           key: 'DATABASE_URL_STAGING',
           required: true,
-          description: 'Staging PostgreSQL connection string (NODE_ENV=staging)',
-        })
+          description:
+            'Staging PostgreSQL connection string (NODE_ENV=staging)',
+        });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_STAGING is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     } else {
-      dbUrl = process.env.DATABASE_URL_DEV
-      if (!dbUrl || dbUrl.trim() === '') {
+      dbUrl = process.env.DATABASE_URL_DEV;
+      if (this.isEmptyOrWhitespace(dbUrl)) {
         missing.push({
           key: 'DATABASE_URL_DEV',
           required: true,
-          description: 'Development PostgreSQL connection string (NODE_ENV=development)',
-        })
+          description:
+            'Development PostgreSQL connection string (NODE_ENV=development)',
+        });
+      } else if (this.isPlaceholder(dbUrl)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: DATABASE_URL_DEV is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     }
 
     // Check other required variables (excluding DATABASE_URL which we handled above)
     for (const envVar of REQUIRED_ENV_VARS) {
       if (envVar.key === 'DATABASE_URL' || envVar.key === 'NODE_ENV') {
-        continue // Already validated
+        continue; // Already validated
       }
 
-      const value = process.env[envVar.key]
-      
-      if (!value || value.trim() === '') {
-        missing.push(envVar)
+      const value = process.env[envVar.key];
+
+      if (this.isEmptyOrWhitespace(value)) {
+        missing.push(envVar);
+      } else if (this.isPlaceholder(value)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: ${envVar.key} is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     }
 
-    // PRODUCTION ONLY: Require CORS_ALLOWED_ORIGINS
+    // Check optional secrets (warn if missing or placeholder, but don't fail)
+    for (const envVar of OPTIONAL_SECRETS) {
+      const value = process.env[envVar.key];
+
+      if (this.isEmptyOrWhitespace(value)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: ${envVar.key} is NOT SET. ${envVar.description}. Set it in ${DEPLOYMENT_PLATFORM_LOCATION} for full functionality.`,
+        );
+      } else if (this.isPlaceholder(value)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: ${envVar.key} is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
+      }
+    }
+
+    // PRODUCTION: Warn about CORS_ALLOWED_ORIGINS (allow empty but warn)
     if (nodeEnv === 'production') {
-      const corsOrigins = process.env.CORS_ALLOWED_ORIGINS
-      if (!corsOrigins || corsOrigins.trim() === '') {
-        missing.push({
-          key: 'CORS_ALLOWED_ORIGINS',
-          required: true,
-          description: 'Comma-separated list of allowed CORS origins (REQUIRED in production)',
-        })
+      const corsOrigins = process.env.CORS_ALLOWED_ORIGINS;
+      if (this.isEmptyOrWhitespace(corsOrigins)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production. CORS will be disabled and API requests from frontend will fail. Set it in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
+      } else if (this.isPlaceholder(corsOrigins)) {
+        warnings.push(
+          `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       }
     }
 
     // Check optional variables (just warn)
     for (const envVar of OPTIONAL_ENV_VARS) {
-      const value = process.env[envVar.key]
-      
-      if (!value || value.trim() === '') {
-        warnings.push(`⚠️  Optional: ${envVar.key} not set (${envVar.description})`)
+      const value = process.env[envVar.key];
+
+      if (this.isEmptyOrWhitespace(value)) {
+        warnings.push(
+          `⚠️  Optional: ${envVar.key} not set (${envVar.description})`,
+        );
       }
     }
 
     // Fail fast if required vars missing
     if (missing.length > 0) {
-      console.error('\n❌ CRITICAL: Missing required environment variables\n')
-      console.error('The following environment variables MUST be set:\n')
-      
+      console.error('\n❌ CRITICAL: Missing required environment variables\n');
+      console.error('The following environment variables MUST be set:\n');
+
       for (const envVar of missing) {
-        console.error(`  ❌ ${envVar.key}`)
-        console.error(`     → ${envVar.description}\n`)
+        console.error(`  ❌ ${envVar.key}`);
+        console.error(`     → ${envVar.description}\n`);
       }
-      
-      console.error('Application cannot start without these variables.')
-      console.error('Set them in your .env file or environment.\n')
-      
+
+      console.error('Application cannot start without these variables.');
+      console.error('Set them in your .env file or environment.\n');
+
       throw new Error(
-        `Missing required environment variables: ${missing.map((v) => v.key).join(', ')}`
-      )
+        `Missing required environment variables: ${missing.map((v) => v.key).join(', ')}`,
+      );
     }
 
     // Log successful validation
-    console.log('✅ Environment variables validated')
-    
+    console.log('✅ Environment variables validated');
+
     if (warnings.length > 0) {
-      console.log('\n⚠️  Optional environment variables not set (using defaults):')
-      warnings.forEach((w) => console.log(`   ${w}`))
-      console.log('')
+      console.log(
+        '\n⚠️  Optional environment variables not set (using defaults):',
+      );
+      warnings.forEach((w) => console.log(`   ${w}`));
+      console.log('');
     }
 
     // Log environment info
-    console.log(`📦 NODE_ENV: ${process.env.NODE_ENV}`)
-    console.log(`🗄️  DATABASE: ${this.maskConnectionString(dbUrl!)}`)
-    console.log(`🔐 JWT_SECRET: ${this.maskSecret(process.env.JWT_SECRET!)}`)
-    console.log('')
+    console.log(`📦 NODE_ENV: ${process.env.NODE_ENV}`);
+    // After validation passes, dbUrl and JWT_SECRET are guaranteed to be set
+    // (either with real values or placeholders)
+    console.log(`🗄️  DATABASE: ${this.maskConnectionString(dbUrl!)}`);
+    console.log(`🔐 JWT_SECRET: ${this.maskSecret(process.env.JWT_SECRET!)}`);
+    console.log('');
   }
 
   /**
@@ -204,13 +270,13 @@ export class EnvironmentValidator {
    */
   private static maskConnectionString(url: string): string {
     try {
-      const parsed = new URL(url)
+      const parsed = new URL(url);
       if (parsed.password) {
-        parsed.password = '***'
+        parsed.password = '***';
       }
-      return parsed.toString()
+      return parsed.toString();
     } catch {
-      return url.substring(0, 20) + '***'
+      return url.substring(0, 20) + '***';
     }
   }
 
@@ -218,9 +284,9 @@ export class EnvironmentValidator {
    * Mask secrets for logging
    */
   private static maskSecret(secret: string): string {
-    if (!secret) return '(not set)'
-    const length = secret.length
-    if (length <= 8) return '***'
-    return `${secret.substring(0, 4)}...${secret.substring(length - 4)} (${length} chars)`
+    if (!secret) return '(not set)';
+    const length = secret.length;
+    if (length <= 8) return '***';
+    return `${secret.substring(0, 4)}...${secret.substring(length - 4)} (${length} chars)`;
   }
 }

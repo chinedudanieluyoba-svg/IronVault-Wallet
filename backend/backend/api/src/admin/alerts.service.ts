@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { AuditLogger } from '../common/logging/audit.logger'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditLogger } from '../common/logging/audit.logger';
 
 export interface Alert {
   alertType:
     | 'balance_mismatch'
     | 'webhook_failures'
     | 'reconciliation_crash'
-    | 'credit_spike'
-  severity: 'critical' | 'high' | 'medium' | 'low'
-  title: string
-  message: string
-  metadata?: any
+    | 'credit_spike';
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  title: string;
+  message: string;
+  metadata?: any;
 }
 
 /**
@@ -23,21 +23,21 @@ export interface Alert {
 export class AlertsService {
   // Configurable thresholds
   private readonly balanceMismatchThreshold = Number(
-    process.env.ALERT_BALANCE_MISMATCH_THRESHOLD ?? '0.01'
-  ) // $0.01
+    process.env.ALERT_BALANCE_MISMATCH_THRESHOLD ?? '0.01',
+  ); // $0.01
   private readonly webhookFailureThreshold = Number(
-    process.env.ALERT_WEBHOOK_FAILURE_THRESHOLD ?? '5'
-  ) // 5 failures
+    process.env.ALERT_WEBHOOK_FAILURE_THRESHOLD ?? '5',
+  ); // 5 failures
   private readonly webhookFailureWindow = Number(
-    process.env.ALERT_WEBHOOK_FAILURE_WINDOW_MINUTES ?? '60'
-  ) // 1 hour
+    process.env.ALERT_WEBHOOK_FAILURE_WINDOW_MINUTES ?? '60',
+  ); // 1 hour
   private readonly creditSpikeThreshold = Number(
-    process.env.ALERT_CREDIT_SPIKE_THRESHOLD ?? '1000'
-  ) // $1000 in 1 minute
+    process.env.ALERT_CREDIT_SPIKE_THRESHOLD ?? '1000',
+  ); // $1000 in 1 minute
 
   // Track recent webhook failures to batch alerts
-  private recentWebhookFailures: { timestamp: Date; provider: string }[] = []
-  private lastWebhookFailureAlert: Date = new Date(0)
+  private recentWebhookFailures: { timestamp: Date; provider: string }[] = [];
+  private lastWebhookFailureAlert: Date = new Date(0);
 
   constructor(
     private prisma: PrismaService,
@@ -52,11 +52,11 @@ export class AlertsService {
     walletId: string,
     walletBalance: number,
     ledgerBalance: number,
-    delta: number
+    delta: number,
   ): Promise<void> {
     // Only alert if mismatch is significant
     if (Math.abs(delta) < this.balanceMismatchThreshold) {
-      return
+      return;
     }
 
     const alert: Alert = {
@@ -70,9 +70,9 @@ export class AlertsService {
         ledgerBalance,
         delta,
       },
-    }
+    };
 
-    await this.logAlert(alert)
+    await this.logAlert(alert);
   }
 
   /**
@@ -82,22 +82,24 @@ export class AlertsService {
   async alertWebhookFailure(
     provider: string,
     externalId: string,
-    error: string
+    error: string,
   ): Promise<void> {
     // Add to recent failures
     this.recentWebhookFailures.push({
       timestamp: new Date(),
       provider,
-    })
+    });
 
     // Clean old failures outside window
-    const windowStart = new Date(Date.now() - this.webhookFailureWindow * 60 * 1000)
+    const windowStart = new Date(
+      Date.now() - this.webhookFailureWindow * 60 * 1000,
+    );
     this.recentWebhookFailures = this.recentWebhookFailures.filter(
-      (f) => f.timestamp > windowStart
-    )
+      (f) => f.timestamp > windowStart,
+    );
 
     // Check if threshold exceeded
-    const failureCount = this.recentWebhookFailures.length
+    const failureCount = this.recentWebhookFailures.length;
     if (
       failureCount >= this.webhookFailureThreshold &&
       Date.now() - this.lastWebhookFailureAlert.getTime() > 5 * 60 * 1000 // Don't spam more than every 5 min
@@ -113,10 +115,10 @@ export class AlertsService {
           threshold: this.webhookFailureThreshold,
           windowMinutes: this.webhookFailureWindow,
         },
-      }
+      };
 
-      await this.logAlert(alert)
-      this.lastWebhookFailureAlert = new Date()
+      await this.logAlert(alert);
+      this.lastWebhookFailureAlert = new Date();
     }
   }
 
@@ -134,9 +136,9 @@ export class AlertsService {
         errorMessage: error.message,
         stack: error.stack?.split('\n').slice(0, 3).join('\n'),
       },
-    }
+    };
 
-    await this.logAlert(alert)
+    await this.logAlert(alert);
   }
 
   /**
@@ -146,13 +148,13 @@ export class AlertsService {
   async alertCreditSpike(
     walletId: string,
     amount: number,
-    previousMinuteTotal: number
+    previousMinuteTotal: number,
   ): Promise<void> {
-    const totalThisMinute = previousMinuteTotal + amount
+    const totalThisMinute = previousMinuteTotal + amount;
 
     // Only alert if spike is significant
     if (totalThisMinute < this.creditSpikeThreshold) {
-      return
+      return;
     }
 
     const alert: Alert = {
@@ -166,9 +168,9 @@ export class AlertsService {
         totalLastMinute: totalThisMinute,
         threshold: this.creditSpikeThreshold,
       },
-    }
+    };
 
-    await this.logAlert(alert)
+    await this.logAlert(alert);
   }
 
   /**
@@ -184,24 +186,24 @@ export class AlertsService {
         message: alert.message,
         metadata: alert.metadata,
       },
-    })
+    });
 
     // Always log to console for visibility
-    const logLevel = alert.severity === 'critical' ? 'error' : 'warn'
+    const logLevel = alert.severity === 'critical' ? 'error' : 'warn';
     this.auditLogger[logLevel](
       { alertType: alert.alertType },
       alert.title,
       undefined,
-      alert.metadata
-    )
+      alert.metadata,
+    );
 
     // Placeholder for v2: email/Slack integration
     // await this.notifySlack(alert)
     // await this.notifyEmail(alert)
 
     console.log(
-      `[${alert.severity.toUpperCase()}] ${alert.alertType}: ${alert.title}`
-    )
+      `[${alert.severity.toUpperCase()}] ${alert.alertType}: ${alert.title}`,
+    );
   }
 
   /**
@@ -210,7 +212,7 @@ export class AlertsService {
   async getUnresolved(
     alertType?: string,
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ alerts: any[]; total: number }> {
     const [alerts, total] = await Promise.all([
       this.prisma.alertLog.findMany({
@@ -228,9 +230,9 @@ export class AlertsService {
           ...(alertType && { alertType }),
         },
       }),
-    ])
+    ]);
 
-    return { alerts, total }
+    return { alerts, total };
   }
 
   /**
@@ -242,7 +244,7 @@ export class AlertsService {
       data: {
         acknowledgedAt: new Date(),
       },
-    })
+    });
   }
 
   /**
@@ -256,16 +258,16 @@ export class AlertsService {
         resolvedAt: new Date(),
         resolvedBy: adminId,
       },
-    })
+    });
   }
 
   /**
    * Get alert statistics
    */
   async getStats(): Promise<{
-    unresolvedByType: { [key: string]: number }
-    unresolvedBySeverity: { [key: string]: number }
-    total24h: number
+    unresolvedByType: { [key: string]: number };
+    unresolvedBySeverity: { [key: string]: number };
+    total24h: number;
   }> {
     const [byType, bySeverity, total24h] = await Promise.all([
       this.prisma.alertLog.groupBy({
@@ -285,24 +287,24 @@ export class AlertsService {
           },
         },
       }),
-    ])
+    ]);
 
     return {
       unresolvedByType: byType.reduce(
         (acc, item) => {
-          acc[item.alertType] = item._count
-          return acc
+          acc[item.alertType] = item._count;
+          return acc;
         },
-        {} as { [key: string]: number }
+        {} as { [key: string]: number },
       ),
       unresolvedBySeverity: bySeverity.reduce(
         (acc, item) => {
-          acc[item.severity] = item._count
-          return acc
+          acc[item.severity] = item._count;
+          return acc;
         },
-        {} as { [key: string]: number }
+        {} as { [key: string]: number },
       ),
       total24h,
-    }
+    };
   }
 }

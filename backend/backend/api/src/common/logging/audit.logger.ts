@@ -42,7 +42,11 @@ export class AuditLogger {
    * Log audit event (key transaction/wallet operations)
    * Use for: wallet creation, deposits, withdrawals, transfers
    */
-  audit(context: AuditContext, message: string, metadata?: Record<string, any>) {
+  audit(
+    context: AuditContext,
+    message: string,
+    metadata?: Record<string, any>,
+  ) {
     const event: AuditEvent = {
       timestamp: new Date().toISOString(),
       level: 'AUDIT',
@@ -84,14 +88,21 @@ export class AuditLogger {
   /**
    * Log errors (without exposing sensitive data)
    */
-  error(context: AuditContext, message: string, error?: Error, metadata?: Record<string, any>) {
+  error(
+    context: AuditContext,
+    message: string,
+    error?: Error,
+    metadata?: Record<string, any>,
+  ) {
     // Extract safe error info
-    const errorInfo = error ? {
-      name: error.name,
-      message: error.message,
-      // Never log full stack trace (may contain secrets)
-      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
-    } : undefined;
+    const errorInfo = error
+      ? {
+          name: error.name,
+          message: error.message,
+          // Never log full stack trace (may contain secrets)
+          stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+        }
+      : undefined;
 
     const event: AuditEvent = {
       timestamp: new Date().toISOString(),
@@ -106,7 +117,9 @@ export class AuditLogger {
   /**
    * Sanitize metadata to remove sensitive fields
    */
-  private sanitizeMetadata(metadata?: Record<string, any>): Record<string, any> | undefined {
+  private sanitizeMetadata(
+    metadata?: Record<string, any>,
+  ): Record<string, any> | undefined {
     if (!metadata) return undefined;
 
     const sanitized = { ...metadata };
@@ -128,7 +141,7 @@ export class AuditLogger {
 
     for (const key in sanitized) {
       // Check if key matches sensitive patterns
-      if (sensitivePatterns.some(pattern => pattern.test(key))) {
+      if (sensitivePatterns.some((pattern) => pattern.test(key))) {
         sanitized[key] = '[REDACTED]';
       }
       // Sanitize objects recursively
@@ -149,13 +162,16 @@ export class AuditLogger {
       event.context.requestId && `req:${event.context.requestId}`,
       event.context.userId && `user:${event.context.userId}`,
       event.context.walletId && `wallet:${event.context.walletId}`,
-      event.context.providerEventId && `provider:${event.context.providerEventId}`,
+      event.context.providerEventId &&
+        `provider:${event.context.providerEventId}`,
     ]
       .filter(Boolean)
       .join(' | ');
 
     const contextStr = context ? ` [${context}]` : '';
-    const metadataStr = event.metadata ? ` | ${JSON.stringify(event.metadata)}` : '';
+    const metadataStr = event.metadata
+      ? ` | ${JSON.stringify(event.metadata)}`
+      : '';
 
     const logMessage = `${event.timestamp} [${event.level}]${contextStr} ${event.message}${metadataStr}`;
 

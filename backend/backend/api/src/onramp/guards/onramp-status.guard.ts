@@ -1,5 +1,5 @@
-import { OnRampEvent } from '../types/onramp-event'
+import { OnRampEvent } from '../types/onramp-event';
 
 export function isCreditableEvent(event: OnRampEvent): boolean {
-  return event.status === 'completed'
+  return event.status === 'completed';
 }

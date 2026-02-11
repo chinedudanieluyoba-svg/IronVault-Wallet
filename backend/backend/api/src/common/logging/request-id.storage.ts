@@ -63,7 +63,11 @@ export class RequestIdStorage {
   /**
    * Run callback with specific context (useful for testing)
    */
-  run<T>(requestId: string, userId?: string, callback?: () => T): T | undefined {
+  run<T>(
+    requestId: string,
+    userId?: string,
+    callback?: () => T,
+  ): T | undefined {
     const context: RequestContext = { requestId, userId };
     return this.localStore.run(context, callback || (() => undefined));
   }

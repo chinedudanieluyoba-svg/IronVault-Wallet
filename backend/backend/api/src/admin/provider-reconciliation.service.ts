@@ -1,22 +1,22 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { AuditLogger } from '../common/logging/audit.logger'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditLogger } from '../common/logging/audit.logger';
 
 export interface MissingWebhookResult {
-  onRampId: string
-  provider: string
-  amount: number
-  status: string
-  completedAt: Date
-  missingWebhook: boolean
-  missingLedger: boolean
+  onRampId: string;
+  provider: string;
+  amount: number;
+  status: string;
+  completedAt: Date;
+  missingWebhook: boolean;
+  missingLedger: boolean;
 }
 
 export interface ProviderReconciliationResult {
-  checkedCount: number
-  missingWebhooks: number
-  missingLedgers: number
-  results: MissingWebhookResult[]
+  checkedCount: number;
+  missingWebhooks: number;
+  missingLedgers: number;
+  results: MissingWebhookResult[];
 }
 
 /**
@@ -35,9 +35,9 @@ export class ProviderReconciliationService {
    * Check all OnRamp records with status='completed' in the last hour
    */
   async reconcileProviders(
-    lookbackMinutes: number = 60
+    lookbackMinutes: number = 60,
   ): Promise<ProviderReconciliationResult> {
-    const cutoff = new Date(Date.now() - lookbackMinutes * 60 * 1000)
+    const cutoff = new Date(Date.now() - lookbackMinutes * 60 * 1000);
 
     // Find all completed OnRamp transactions in lookback window
     const completedOnRamps = await this.prisma.onRamp.findMany({
@@ -51,11 +51,11 @@ export class ProviderReconciliationService {
         wallet: true,
         missingWebhook: true,
       },
-    })
+    });
 
-    const results: MissingWebhookResult[] = []
-    let missingWebhookCount = 0
-    let missingLedgerCount = 0
+    const results: MissingWebhookResult[] = [];
+    let missingWebhookCount = 0;
+    let missingLedgerCount = 0;
 
     // Check each completed OnRamp for corresponding webhook and ledger
     for (const onRamp of completedOnRamps) {
@@ -70,7 +70,7 @@ export class ProviderReconciliationService {
             walletId: onRamp.walletId,
           },
         },
-      })
+      });
 
       // Check for ledger entries from this webhook
       const ledgerEntries = await this.prisma.walletLedgerEntry.findMany({
@@ -85,15 +85,15 @@ export class ProviderReconciliationService {
             lte: new Date(),
           },
         },
-      })
+      });
 
-      const webhookExists = webhookEvents.length > 0
-      const ledgerExists = ledgerEntries.length > 0
-      const missingWebhook = !webhookExists
-      const missingLedger = !ledgerExists && webhookExists // Ledger missing only if webhook exists but ledger doesn't
+      const webhookExists = webhookEvents.length > 0;
+      const ledgerExists = ledgerEntries.length > 0;
+      const missingWebhook = !webhookExists;
+      const missingLedger = !ledgerExists && webhookExists; // Ledger missing only if webhook exists but ledger doesn't
 
       if (missingWebhook) {
-        missingWebhookCount++
+        missingWebhookCount++;
         this.auditLogger.error(
           { onRampId: onRamp.id },
           'Missing webhook event detected',
@@ -103,8 +103,8 @@ export class ProviderReconciliationService {
             amount: onRamp.amount,
             completedAt: onRamp.completedAt,
             walletId: onRamp.walletId,
-          }
-        )
+          },
+        );
 
         // Create or update MissingWebhookAlert
         if (!onRamp.missingWebhook) {
@@ -114,11 +114,11 @@ export class ProviderReconciliationService {
               provider: onRamp.provider,
               status: 'pending',
             },
-          })
+          });
         }
       } else if (missingLedger) {
         // Webhook exists but ledger entry is missing (shouldn't happen, but flag it)
-        missingLedgerCount++
+        missingLedgerCount++;
         this.auditLogger.error(
           { onRampId: onRamp.id },
           'Ledger entry missing for webhook event',
@@ -127,8 +127,8 @@ export class ProviderReconciliationService {
             provider: onRamp.provider,
             amount: onRamp.amount,
             walletId: onRamp.walletId,
-          }
-        )
+          },
+        );
       }
 
       results.push({
@@ -139,7 +139,7 @@ export class ProviderReconciliationService {
         completedAt: onRamp.completedAt || onRamp.createdAt,
         missingWebhook,
         missingLedger,
-      })
+      });
     }
 
     return {
@@ -147,7 +147,7 @@ export class ProviderReconciliationService {
       missingWebhooks: missingWebhookCount,
       missingLedgers: missingLedgerCount,
       results,
-    }
+    };
   }
 
   /**
@@ -155,7 +155,7 @@ export class ProviderReconciliationService {
    */
   async getPendingMissingWebhooks(
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<{ alerts: any[]; total: number }> {
     const [alerts, total] = await Promise.all([
       this.prisma.missingWebhookAlert.findMany({
@@ -168,9 +168,9 @@ export class ProviderReconciliationService {
         skip: offset,
       }),
       this.prisma.missingWebhookAlert.count({ where: { status: 'pending' } }),
-    ])
+    ]);
 
-    return { alerts, total }
+    return { alerts, total };
   }
 
   /**
@@ -179,7 +179,7 @@ export class ProviderReconciliationService {
   async resolveMissingWebhook(
     alertId: string,
     resolution: 'webhook_received' | 'manual_credit' | 'cancelled',
-    notes?: string
+    notes?: string,
   ): Promise<void> {
     await this.prisma.missingWebhookAlert.update({
       where: { id: alertId },
@@ -189,7 +189,7 @@ export class ProviderReconciliationService {
         resolvedAt: new Date(),
         notes,
       },
-    })
+    });
   }
 
   /**
@@ -200,10 +200,10 @@ export class ProviderReconciliationService {
     const alert = await this.prisma.missingWebhookAlert.findUnique({
       where: { id: alertId },
       include: { onRamp: true },
-    })
+    });
 
     if (!alert) {
-      throw new Error('Missing webhook alert not found')
+      throw new Error('Missing webhook alert not found');
     }
 
     // Mark the OnRamp as completed if not already
@@ -211,20 +211,20 @@ export class ProviderReconciliationService {
       await this.prisma.onRamp.update({
         where: { id: alert.onRampId },
         data: { status: 'completed', completedAt: new Date() },
-      })
+      });
     }
 
     // Create a ledger entry to credit the wallet
     const wallet = await this.prisma.wallet.findUnique({
       where: { id: alert.onRamp.walletId },
-    })
+    });
 
     if (!wallet) {
-      throw new Error('Wallet not found')
+      throw new Error('Wallet not found');
     }
 
-    const balanceBefore = wallet.balance
-    const balanceAfter = balanceBefore + alert.onRamp.amount
+    const balanceBefore = wallet.balance;
+    const balanceAfter = balanceBefore + alert.onRamp.amount;
 
     // Update wallet balance
     await this.prisma.wallet.update({
@@ -232,7 +232,7 @@ export class ProviderReconciliationService {
       data: {
         balance: balanceAfter,
       },
-    })
+    });
 
     // Create ledger entry
     await this.prisma.walletLedgerEntry.create({
@@ -247,19 +247,19 @@ export class ProviderReconciliationService {
         source: 'webhook',
         providerEventId: `manual_${alertId}`,
       },
-    })
+    });
 
     // Mark alert as resolved
-    await this.resolveMissingWebhook(alertId, 'manual_credit', `Manually replayed by ${adminId}`)
+    await this.resolveMissingWebhook(
+      alertId,
+      'manual_credit',
+      `Manually replayed by ${adminId}`,
+    );
 
-    this.auditLogger.audit(
-      { adminId },
-      'Missing webhook replayed manually',
-      {
-        alertId,
-        onRampId: alert.onRampId,
-        amount: alert.onRamp.amount,
-      }
-    )
+    this.auditLogger.audit({ adminId }, 'Missing webhook replayed manually', {
+      alertId,
+      onRampId: alert.onRampId,
+      amount: alert.onRamp.amount,
+    });
   }
 }

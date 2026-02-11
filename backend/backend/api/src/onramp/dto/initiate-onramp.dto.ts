@@ -15,10 +15,17 @@ export class InitiateOnRampDto {
     }
 
     if (!data.currency || !isValidCurrency(data.currency)) {
-      throw new Error(`currency must be one of: ${Object.values(Currency).join(', ')}`);
+      throw new Error(
+        `currency must be one of: ${Object.values(Currency).join(', ')}`,
+      );
     }
 
-    const validProviders: OnRampProvider[] = ['moonpay', 'transak', 'paystack', 'stripe'];
+    const validProviders: OnRampProvider[] = [
+      'moonpay',
+      'transak',
+      'paystack',
+      'stripe',
+    ];
     if (!data.provider || !validProviders.includes(data.provider)) {
       throw new Error(`provider must be one of: ${validProviders.join(', ')}`);
     }

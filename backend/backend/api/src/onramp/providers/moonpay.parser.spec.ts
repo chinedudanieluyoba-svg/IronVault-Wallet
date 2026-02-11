@@ -1,4 +1,4 @@
-import { parseMoonPayWebhook } from './moonpay.parser'
+import { parseMoonPayWebhook } from './moonpay.parser';
 
 describe('MoonPayParser', () => {
   describe('parseMoonPayWebhook', () => {
@@ -11,9 +11,9 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_abc123',
         },
-      }
+      };
 
-      const result = parseMoonPayWebhook(payload)
+      const result = parseMoonPayWebhook(payload);
 
       expect(result).toEqual({
         provider: 'moonpay',
@@ -23,8 +23,8 @@ describe('MoonPayParser', () => {
         currency: 'USD',
         status: 'completed',
         rawPayloadHash: expect.any(String),
-      })
-    })
+      });
+    });
 
     it('should normalize status to lowercase', () => {
       const payload = {
@@ -35,15 +35,15 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_xyz',
         },
-      }
+      };
 
-      const result = parseMoonPayWebhook(payload)
+      const result = parseMoonPayWebhook(payload);
 
-      expect(result.status).toBe('completed')
-    })
+      expect(result.status).toBe('completed');
+    });
 
     it('should handle different payment statuses', () => {
-      const statuses = ['pending', 'failed', 'refunded', 'completed']
+      const statuses = ['pending', 'failed', 'refunded', 'completed'];
 
       statuses.forEach((status) => {
         const payload = {
@@ -54,13 +54,13 @@ describe('MoonPayParser', () => {
           metadata: {
             userId: 'user_test',
           },
-        }
+        };
 
-        const result = parseMoonPayWebhook(payload)
+        const result = parseMoonPayWebhook(payload);
 
-        expect(result.status).toBe(status)
-      })
-    })
+        expect(result.status).toBe(status);
+      });
+    });
 
     it('should convert amount string to number', () => {
       const payload = {
@@ -71,13 +71,13 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_1',
         },
-      }
+      };
 
-      const result = parseMoonPayWebhook(payload)
+      const result = parseMoonPayWebhook(payload);
 
-      expect(result.amount).toBe(1234.56)
-      expect(typeof result.amount).toBe('number')
-    })
+      expect(result.amount).toBe(1234.56);
+      expect(typeof result.amount).toBe('number');
+    });
 
     it('should generate SHA256 hash of raw payload', () => {
       const payload = {
@@ -88,13 +88,13 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_1',
         },
-      }
+      };
 
-      const result = parseMoonPayWebhook(payload)
+      const result = parseMoonPayWebhook(payload);
 
       // Hash should be 64 characters (256 bits in hex)
-      expect(result.rawPayloadHash).toMatch(/^[a-f0-9]{64}$/)
-    })
+      expect(result.rawPayloadHash).toMatch(/^[a-f0-9]{64}$/);
+    });
 
     it('should generate consistent hash for same payload', () => {
       const payload = {
@@ -105,16 +105,16 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_1',
         },
-      }
+      };
 
-      const result1 = parseMoonPayWebhook(payload)
-      const result2 = parseMoonPayWebhook(payload)
+      const result1 = parseMoonPayWebhook(payload);
+      const result2 = parseMoonPayWebhook(payload);
 
-      expect(result1.rawPayloadHash).toBe(result2.rawPayloadHash)
-    })
+      expect(result1.rawPayloadHash).toBe(result2.rawPayloadHash);
+    });
 
     it('should handle different currencies', () => {
-      const currencies = ['USD', 'EUR', 'GBP', 'JPY']
+      const currencies = ['USD', 'EUR', 'GBP', 'JPY'];
 
       currencies.forEach((currency) => {
         const payload = {
@@ -125,13 +125,13 @@ describe('MoonPayParser', () => {
           metadata: {
             userId: 'user_1',
           },
-        }
+        };
 
-        const result = parseMoonPayWebhook(payload)
+        const result = parseMoonPayWebhook(payload);
 
-        expect(result.currency).toBe(currency)
-      })
-    })
+        expect(result.currency).toBe(currency);
+      });
+    });
 
     it('should always set provider to moonpay', () => {
       const payload = {
@@ -142,11 +142,11 @@ describe('MoonPayParser', () => {
         metadata: {
           userId: 'user_1',
         },
-      }
+      };
 
-      const result = parseMoonPayWebhook(payload)
+      const result = parseMoonPayWebhook(payload);
 
-      expect(result.provider).toBe('moonpay')
-    })
-  })
-})
+      expect(result.provider).toBe('moonpay');
+    });
+  });
+});

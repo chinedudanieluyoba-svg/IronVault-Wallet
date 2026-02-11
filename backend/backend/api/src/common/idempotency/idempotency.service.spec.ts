@@ -27,13 +27,28 @@ describe('IdempotencyService', () => {
 
   describe('generateKey', () => {
     it('should generate idempotency key in correct format', () => {
-      const key = service.generateKey('webhook', 'moonpay_tx_123', 'wallet_456', 'credit');
+      const key = service.generateKey(
+        'webhook',
+        'moonpay_tx_123',
+        'wallet_456',
+        'credit',
+      );
       expect(key).toBe('webhook:moonpay_tx_123:wallet_456:credit');
     });
 
     it('should generate unique keys for different operations', () => {
-      const key1 = service.generateKey('webhook', 'tx_123', 'wallet_1', 'credit');
-      const key2 = service.generateKey('webhook', 'tx_123', 'wallet_1', 'debit');
+      const key1 = service.generateKey(
+        'webhook',
+        'tx_123',
+        'wallet_1',
+        'credit',
+      );
+      const key2 = service.generateKey(
+        'webhook',
+        'tx_123',
+        'wallet_1',
+        'debit',
+      );
       expect(key1).not.toBe(key2);
     });
   });
@@ -49,14 +64,24 @@ describe('IdempotencyService', () => {
 
   describe('generateAdminKey', () => {
     it('should generate admin idempotency key', () => {
-      const key = service.generateAdminKey('admin_123', 1707350400000, 'wallet_456', 'credit');
+      const key = service.generateAdminKey(
+        'admin_123',
+        1707350400000,
+        'wallet_456',
+        'credit',
+      );
       expect(key).toMatch(/^admin:admin_123_\d+:wallet_456:credit$/);
     });
   });
 
   describe('generateUserKey', () => {
     it('should generate user idempotency key', () => {
-      const key = service.generateUserKey('user_123', 'tx_456', 'wallet_789', 'debit');
+      const key = service.generateUserKey(
+        'user_123',
+        'tx_456',
+        'wallet_789',
+        'debit',
+      );
       expect(key).toBe('user:user_123_tx_456:wallet_789:debit');
     });
   });
@@ -71,7 +96,9 @@ describe('IdempotencyService', () => {
 
       mockPrisma.walletLedgerEntry.findUnique.mockResolvedValue(existingEntry);
 
-      const result = await service.checkIdempotency('webhook:moonpay_tx_123:wallet_456:credit');
+      const result = await service.checkIdempotency(
+        'webhook:moonpay_tx_123:wallet_456:credit',
+      );
 
       expect(result.isNew).toBe(false);
       expect(result.existingEntry).toEqual(existingEntry);
@@ -80,7 +107,9 @@ describe('IdempotencyService', () => {
     it('should return isNew=true for new entry', async () => {
       mockPrisma.walletLedgerEntry.findUnique.mockResolvedValue(null);
 
-      const result = await service.checkIdempotency('webhook:new_tx:wallet_456:credit');
+      const result = await service.checkIdempotency(
+        'webhook:new_tx:wallet_456:credit',
+      );
 
       expect(result.isNew).toBe(true);
       expect(result.existingEntry).toBeUndefined();

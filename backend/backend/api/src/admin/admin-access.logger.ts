@@ -1,18 +1,18 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { AuditLogger } from '../common/logging/audit.logger'
-import { RequestIdStorage } from '../common/logging/request-id.storage'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditLogger } from '../common/logging/audit.logger';
+import { RequestIdStorage } from '../common/logging/request-id.storage';
 
 export interface AdminAccessEntry {
-  adminUserId: string
-  action: string
-  resource: string
-  resourceId?: string
-  status: 'success' | 'denied' | 'error'
-  requestId?: string
-  ipAddress?: string
-  userAgent?: string
-  metadata?: Record<string, any>
+  adminUserId: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  status: 'success' | 'denied' | 'error';
+  requestId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -33,7 +33,7 @@ export class AdminAccessLogger {
    */
   async logAccess(entry: AdminAccessEntry): Promise<void> {
     try {
-      const requestId = entry.requestId || this.requestIdStorage.getRequestId()
+      const requestId = entry.requestId || this.requestIdStorage.getRequestId();
       await this.prisma.adminAccessLog.create({
         data: {
           adminUserId: entry.adminUserId,
@@ -47,7 +47,7 @@ export class AdminAccessLogger {
           metadata: entry.metadata,
           timestamp: new Date(),
         },
-      })
+      });
 
       // Also log to audit trail
       this.auditLogger.audit(
@@ -59,10 +59,10 @@ export class AdminAccessLogger {
           resourceId: entry.resourceId,
           status: entry.status,
           ipAddress: entry.ipAddress,
-        }
-      )
+        },
+      );
     } catch (error) {
-      console.error('Failed to log admin access:', error)
+      console.error('Failed to log admin access:', error);
     }
   }
 
@@ -74,25 +74,25 @@ export class AdminAccessLogger {
     limit: number = 100,
     offset: number = 0,
     filters?: {
-      adminUserId?: string
-      action?: string
-      resource?: string
-      status?: string
-      startDate?: Date
-      endDate?: Date
-    }
+      adminUserId?: string;
+      action?: string;
+      resource?: string;
+      status?: string;
+      startDate?: Date;
+      endDate?: Date;
+    },
   ) {
-    const where: any = {}
+    const where: any = {};
 
-    if (filters?.adminUserId) where.adminUserId = filters.adminUserId
-    if (filters?.action) where.action = filters.action
-    if (filters?.resource) where.resource = filters.resource
-    if (filters?.status) where.status = filters.status
+    if (filters?.adminUserId) where.adminUserId = filters.adminUserId;
+    if (filters?.action) where.action = filters.action;
+    if (filters?.resource) where.resource = filters.resource;
+    if (filters?.status) where.status = filters.status;
 
     if (filters?.startDate || filters?.endDate) {
-      where.timestamp = {}
-      if (filters.startDate) where.timestamp.gte = filters.startDate
-      if (filters.endDate) where.timestamp.lte = filters.endDate
+      where.timestamp = {};
+      if (filters.startDate) where.timestamp.gte = filters.startDate;
+      if (filters.endDate) where.timestamp.lte = filters.endDate;
     }
 
     const [logs, total] = await Promise.all([
@@ -103,8 +103,8 @@ export class AdminAccessLogger {
         skip: offset,
       }),
       this.prisma.adminAccessLog.count({ where }),
-    ])
+    ]);
 
-    return { logs, total }
+    return { logs, total };
   }
 }

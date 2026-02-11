@@ -8,19 +8,19 @@ import {
   UseGuards,
   Req,
   BadRequestException,
-} from '@nestjs/common'
-import { AdminService } from './admin.service'
-import { ProviderReconciliationService } from './provider-reconciliation.service'
-import { WebhookRetryService } from './webhook-retry.service'
-import { DeadLetterQueueService } from './dead-letter-queue.service'
-import { AlertsService } from './alerts.service'
-import { AdminAccessLogger } from './admin-access.logger'
-import { JwtAuthGuard } from '../auth/jwt/jwt.guard'
-import { RolesGuard } from '../auth/roles.guard'
-import { Roles } from '../auth/roles.decorator'
-import { Role } from '../auth/roles.enum'
-import { RateLimitAdminEmergency } from '../common/rate-limit/rate-limit.decorators'
-import { AdminCreditDto } from './dtos/admin-credit.dto'
+} from '@nestjs/common';
+import { AdminService } from './admin.service';
+import { ProviderReconciliationService } from './provider-reconciliation.service';
+import { WebhookRetryService } from './webhook-retry.service';
+import { DeadLetterQueueService } from './dead-letter-queue.service';
+import { AlertsService } from './alerts.service';
+import { AdminAccessLogger } from './admin-access.logger';
+import { JwtAuthGuard } from '../auth/jwt/jwt.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/roles.enum';
+import { RateLimitAdminEmergency } from '../common/rate-limit/rate-limit.decorators';
+import { AdminCreditDto } from './dtos/admin-credit.dto';
 
 /**
  * Admin & Audit endpoints
@@ -49,14 +49,17 @@ export class AdminController {
   async getAllWallets(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      const result = await this.adminService.getAllWallets(parsedLimit, parsedOffset)
+      const result = await this.adminService.getAllWallets(
+        parsedLimit,
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -65,14 +68,22 @@ export class AdminController {
         status: 'success',
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
-        metadata: { limit: parsedLimit, offset: parsedOffset, returned: result.wallets.length },
-      })
+        metadata: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          returned: result.wallets.length,
+        },
+      });
 
       return {
         success: true,
         data: result.wallets,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -82,8 +93,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -97,14 +108,18 @@ export class AdminController {
     @Param('id') walletId: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 50, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 50, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      const result = await this.adminService.getWalletDetails(walletId, parsedLimit, parsedOffset)
+      const result = await this.adminService.getWalletDetails(
+        walletId,
+        parsedLimit,
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -118,12 +133,12 @@ export class AdminController {
           walletUserId: result.wallet.userId,
           balance: result.wallet.balance,
         },
-      })
+      });
 
       return {
         success: true,
         data: result,
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -134,8 +149,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -149,14 +164,18 @@ export class AdminController {
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      const result = await this.adminService.getWalletsByUserId(userId, parsedLimit, parsedOffset)
+      const result = await this.adminService.getWalletsByUserId(
+        userId,
+        parsedLimit,
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -166,14 +185,22 @@ export class AdminController {
         status: 'success',
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
-        metadata: { limit: parsedLimit, offset: parsedOffset, returned: result.wallets.length },
-      })
+        metadata: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          returned: result.wallets.length,
+        },
+      });
 
       return {
         success: true,
         data: result.wallets,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -184,8 +211,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -204,24 +231,24 @@ export class AdminController {
     @Query('source') source?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
-    const filters: any = {}
-    if (walletId) filters.walletId = walletId
-    if (source) filters.source = source
-    if (startDate) filters.startDate = new Date(startDate)
-    if (endDate) filters.endDate = new Date(endDate)
+    const filters: any = {};
+    if (walletId) filters.walletId = walletId;
+    if (source) filters.source = source;
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
 
     try {
       const result = await this.adminService.getAllLedgerEntries(
         parsedLimit,
         parsedOffset,
-        filters
-      )
+        filters,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -236,13 +263,17 @@ export class AdminController {
           returned: result.entries.length,
           filters,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.entries,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -252,8 +283,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -268,18 +299,18 @@ export class AdminController {
     @Param('walletId') walletId: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
       const result = await this.adminService.getLedgerEntriesByWallet(
         walletId,
         parsedLimit,
-        parsedOffset
-      )
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -294,13 +325,17 @@ export class AdminController {
           offset: parsedOffset,
           returned: result.entries.length,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.entries,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -311,8 +346,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -327,18 +362,18 @@ export class AdminController {
     @Param('txId') txId: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
       const result = await this.adminService.getLedgerEntriesByTransaction(
         txId,
         parsedLimit,
-        parsedOffset
-      )
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -353,13 +388,17 @@ export class AdminController {
           offset: parsedOffset,
           returned: result.entries.length,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.entries,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -370,8 +409,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -390,24 +429,24 @@ export class AdminController {
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
-    const filters: any = {}
-    if (provider) filters.provider = provider
-    if (status) filters.status = status
-    if (startDate) filters.startDate = new Date(startDate)
-    if (endDate) filters.endDate = new Date(endDate)
+    const filters: any = {};
+    if (provider) filters.provider = provider;
+    if (status) filters.status = status;
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
 
     try {
       const result = await this.adminService.getAllWebhookEvents(
         parsedLimit,
         parsedOffset,
-        filters
-      )
+        filters,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -422,13 +461,17 @@ export class AdminController {
           returned: result.events.length,
           filters,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.events,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -438,8 +481,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -450,14 +493,11 @@ export class AdminController {
    * Does NOT show raw payload - only hash for tamper detection
    */
   @Get('webhooks/:eventId')
-  async getWebhookEvent(
-    @Param('eventId') eventId: string,
-    @Req() req?
-  ) {
-    const adminId = (req.user as any)?.userId
+  async getWebhookEvent(@Param('eventId') eventId: string, @Req() req?) {
+    const adminId = req.user?.userId;
 
     try {
-      const result = await this.adminService.getWebhookEvent(eventId)
+      const result = await this.adminService.getWebhookEvent(eventId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -471,12 +511,12 @@ export class AdminController {
           provider: result.provider,
           status: result.status,
         },
-      })
+      });
 
       return {
         success: true,
         data: result,
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -487,8 +527,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -509,26 +549,26 @@ export class AdminController {
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const requesterAdminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const requesterAdminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
-    const filters: any = {}
-    if (adminUserId) filters.adminUserId = adminUserId
-    if (action) filters.action = action
-    if (resource) filters.resource = resource
-    if (status) filters.status = status
-    if (startDate) filters.startDate = new Date(startDate)
-    if (endDate) filters.endDate = new Date(endDate)
+    const filters: any = {};
+    if (adminUserId) filters.adminUserId = adminUserId;
+    if (action) filters.action = action;
+    if (resource) filters.resource = resource;
+    if (status) filters.status = status;
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
 
     try {
       const result = await this.accessLogger.getLogs(
         parsedLimit,
         parsedOffset,
-        filters
-      )
+        filters,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: requesterAdminId,
@@ -543,13 +583,17 @@ export class AdminController {
           returned: result.logs.length,
           filters,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.logs,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: requesterAdminId,
@@ -559,8 +603,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -575,15 +619,15 @@ export class AdminController {
     @Query('walletId') walletId?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
       if (walletId) {
-        const result = await this.adminService.getLedgerIntegrity(walletId)
+        const result = await this.adminService.getLedgerIntegrity(walletId);
 
         await this.accessLogger.logAccess({
           adminUserId: adminId,
@@ -594,18 +638,18 @@ export class AdminController {
           ipAddress: req?.ip,
           userAgent: req?.get('user-agent'),
           metadata: { walletId, isConsistent: result.isConsistent },
-        })
+        });
 
         return {
           success: true,
           data: result,
-        }
+        };
       }
 
       const result = await this.adminService.getLedgerIntegrityAll(
         parsedLimit,
-        parsedOffset
-      )
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -620,14 +664,18 @@ export class AdminController {
           returned: result.results.length,
           mismatches: result.mismatches,
         },
-      })
+      });
 
       return {
         success: true,
         data: result.results,
         summary: { mismatches: result.mismatches },
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -638,8 +686,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -652,7 +700,7 @@ export class AdminController {
    * - Admin role
    * Logged as source='admin' with adminId visible in ledger
    * Rate limited: 2 req/min (strictly controlled)
-   * 
+   *
    * ⚠️ WARNING: No debit allowed. Refunds = credits with reference.
    */
   @Post('wallet/:walletId/credit')
@@ -660,24 +708,24 @@ export class AdminController {
   async manualCredit(
     @Param('walletId') walletId: string,
     @Body() input: any,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
     try {
       // Validate DTO
-      const dto = new AdminCreditDto(input)
+      const dto = new AdminCreditDto(input);
 
       const result = await this.adminService.manualCredit(
         walletId,
         dto.amount,
         dto.reason,
-        adminId
-      )
+        adminId,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -694,12 +742,12 @@ export class AdminController {
           balanceAfter: result.balanceAfter,
           ledgerEntryId: result.ledgerEntryId,
         },
-      })
+      });
 
       return {
         success: true,
         data: result,
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -713,8 +761,10 @@ export class AdminController {
           amount: input?.amount,
           error: error.message,
         },
-      })
-      throw new BadRequestException(error.message || 'Failed to process manual credit')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to process manual credit',
+      );
     }
   }
 
@@ -726,14 +776,17 @@ export class AdminController {
   async getFlaggedWallets(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      const result = await this.adminService.getFlaggedWallets(parsedLimit, parsedOffset)
+      const result = await this.adminService.getFlaggedWallets(
+        parsedLimit,
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -742,14 +795,22 @@ export class AdminController {
         status: 'success',
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
-        metadata: { limit: parsedLimit, offset: parsedOffset, returned: result.wallets.length },
-      })
+        metadata: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          returned: result.wallets.length,
+        },
+      });
 
       return {
         success: true,
         data: result.wallets,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -759,8 +820,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -770,14 +831,14 @@ export class AdminController {
    */
   @Post('wallet/:walletId/clear-flag')
   async clearWalletFlag(@Param('walletId') walletId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
     try {
-      await this.adminService.clearWalletFlag(walletId, adminId)
+      await this.adminService.clearWalletFlag(walletId, adminId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -788,12 +849,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'Wallet flag cleared',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -804,8 +865,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -817,17 +878,18 @@ export class AdminController {
   async getMissingWebhooks(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      const result = await this.providerReconciliationService.getPendingMissingWebhooks(
-        parsedLimit,
-        parsedOffset
-      )
+      const result =
+        await this.providerReconciliationService.getPendingMissingWebhooks(
+          parsedLimit,
+          parsedOffset,
+        );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -836,14 +898,22 @@ export class AdminController {
         status: 'success',
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
-        metadata: { limit: parsedLimit, offset: parsedOffset, returned: result.alerts.length },
-      })
+        metadata: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          returned: result.alerts.length,
+        },
+      });
 
       return {
         success: true,
         data: result.alerts,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -853,8 +923,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -867,27 +937,27 @@ export class AdminController {
     @Param('alertId') alertId: string,
     @Body('resolution') resolution: string,
     @Body('notes') notes?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
-    const validResolutions = ['webhook_received', 'manual_credit', 'cancelled']
+    const validResolutions = ['webhook_received', 'manual_credit', 'cancelled'];
     if (!validResolutions.includes(resolution)) {
       throw new BadRequestException(
-        `Invalid resolution. Must be one of: ${validResolutions.join(', ')}`
-      )
+        `Invalid resolution. Must be one of: ${validResolutions.join(', ')}`,
+      );
     }
 
     try {
       await this.providerReconciliationService.resolveMissingWebhook(
         alertId,
         resolution as any,
-        notes
-      )
+        notes,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -898,12 +968,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { resolution, notes },
-      })
+      });
 
       return {
         success: true,
         message: 'Missing webhook alert resolved',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -914,8 +984,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to resolve missing webhook')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to resolve missing webhook',
+      );
     }
   }
 
@@ -927,14 +999,17 @@ export class AdminController {
   @Post('webhook/:alertId/replay')
   @RateLimitAdminEmergency()
   async replayMissingWebhook(@Param('alertId') alertId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
     try {
-      await this.providerReconciliationService.replayMissingWebhook(alertId, adminId)
+      await this.providerReconciliationService.replayMissingWebhook(
+        alertId,
+        adminId,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -945,12 +1020,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'Missing webhook replayed and wallet credited',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -961,8 +1036,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to replay missing webhook')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to replay missing webhook',
+      );
     }
   }
 
@@ -974,17 +1051,17 @@ export class AdminController {
   async getDeadLetterWebhooks(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
       const result = await this.webhookRetryService.getDeadLetterWebhooks(
         parsedLimit,
-        parsedOffset
-      )
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -993,14 +1070,22 @@ export class AdminController {
         status: 'success',
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
-        metadata: { limit: parsedLimit, offset: parsedOffset, returned: result.webhooks.length },
-      })
+        metadata: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          returned: result.webhooks.length,
+        },
+      });
 
       return {
         success: true,
         data: result.webhooks,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1010,8 +1095,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -1023,15 +1108,21 @@ export class AdminController {
    */
   @Post('webhook/:webhookId/retry-dead-letter')
   @RateLimitAdminEmergency()
-  async retryDeadLetterWebhook(@Param('webhookId') webhookId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+  async retryDeadLetterWebhook(
+    @Param('webhookId') webhookId: string,
+    @Req() req?,
+  ) {
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
     try {
-      await this.webhookRetryService.manuallyRetryDeadLetter(webhookId, adminId)
+      await this.webhookRetryService.manuallyRetryDeadLetter(
+        webhookId,
+        adminId,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1042,12 +1133,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'Dead-letter webhook moved back to retry queue',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1058,8 +1149,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to retry dead-letter webhook')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to retry dead-letter webhook',
+      );
     }
   }
 
@@ -1073,20 +1166,28 @@ export class AdminController {
     @Query('offset') offset?: string,
     @Query('status') status?: string,
     @Query('provider') provider?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
-      let result
+      let result;
       if (provider) {
-        result = await this.dlqService.getByProvider(provider, parsedLimit, parsedOffset)
+        result = await this.dlqService.getByProvider(
+          provider,
+          parsedLimit,
+          parsedOffset,
+        );
       } else if (status) {
-        result = await this.dlqService.getByStatus(status, parsedLimit, parsedOffset)
+        result = await this.dlqService.getByStatus(
+          status,
+          parsedLimit,
+          parsedOffset,
+        );
       } else {
-        result = await this.dlqService.getPending(parsedLimit, parsedOffset)
+        result = await this.dlqService.getPending(parsedLimit, parsedOffset);
       }
 
       await this.accessLogger.logAccess({
@@ -1103,13 +1204,17 @@ export class AdminController {
           status: status || 'pending',
           provider: provider || 'all',
         },
-      })
+      });
 
       return {
         success: true,
         data: result.items,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1119,8 +1224,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -1130,10 +1235,10 @@ export class AdminController {
    */
   @Get('dead-letter-queue/stats')
   async getDLQStats(@Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     try {
-      const stats = await this.dlqService.getStats()
+      const stats = await this.dlqService.getStats();
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1143,14 +1248,14 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: stats,
-      })
+      });
 
       return {
         success: true,
         data: stats,
-      }
+      };
     } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to get DLQ stats')
+      throw new BadRequestException(error.message || 'Failed to get DLQ stats');
     }
   }
 
@@ -1163,23 +1268,23 @@ export class AdminController {
     @Param('dlqId') dlqId: string,
     @Body('resolution') resolution: string,
     @Body('notes') notes?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
-    const validResolutions = ['manual_replay', 'manual_credit', 'cancelled']
+    const validResolutions = ['manual_replay', 'manual_credit', 'cancelled'];
     if (!validResolutions.includes(resolution)) {
       throw new BadRequestException(
-        `Invalid resolution. Must be one of: ${validResolutions.join(', ')}`
-      )
+        `Invalid resolution. Must be one of: ${validResolutions.join(', ')}`,
+      );
     }
 
     try {
-      await this.dlqService.resolve(dlqId, resolution as any, notes, adminId)
+      await this.dlqService.resolve(dlqId, resolution as any, notes, adminId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1190,12 +1295,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { resolution, notes },
-      })
+      });
 
       return {
         success: true,
         message: 'DLQ item resolved',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1206,8 +1311,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to resolve DLQ item')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to resolve DLQ item',
+      );
     }
   }
 
@@ -1217,10 +1324,10 @@ export class AdminController {
    */
   @Post('dead-letter-queue/:dlqId/archive')
   async archiveDLQItem(@Param('dlqId') dlqId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     try {
-      await this.dlqService.archive(dlqId)
+      await this.dlqService.archive(dlqId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1231,12 +1338,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'DLQ item archived',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1247,8 +1354,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to archive DLQ item')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to archive DLQ item',
+      );
     }
   }
 
@@ -1261,18 +1370,18 @@ export class AdminController {
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
     @Query('type') alertType?: string,
-    @Req() req?
+    @Req() req?,
   ) {
-    const adminId = (req.user as any)?.userId
-    const parsedLimit = this.parseLimit(limit, 100, 500)
-    const parsedOffset = this.parseOffset(offset)
+    const adminId = req.user?.userId;
+    const parsedLimit = this.parseLimit(limit, 100, 500);
+    const parsedOffset = this.parseOffset(offset);
 
     try {
       const result = await this.alertsService.getUnresolved(
         alertType,
         parsedLimit,
-        parsedOffset
-      )
+        parsedOffset,
+      );
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1287,13 +1396,17 @@ export class AdminController {
           returned: result.alerts.length,
           alertType: alertType || 'all',
         },
-      })
+      });
 
       return {
         success: true,
         data: result.alerts,
-        pagination: { limit: parsedLimit, offset: parsedOffset, total: result.total },
-      }
+        pagination: {
+          limit: parsedLimit,
+          offset: parsedOffset,
+          total: result.total,
+        },
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1303,8 +1416,8 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
@@ -1314,10 +1427,10 @@ export class AdminController {
    */
   @Get('alerts/stats')
   async getAlertStats(@Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     try {
-      const stats = await this.alertsService.getStats()
+      const stats = await this.alertsService.getStats();
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1327,14 +1440,16 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: stats,
-      })
+      });
 
       return {
         success: true,
         data: stats,
-      }
+      };
     } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to get alert stats')
+      throw new BadRequestException(
+        error.message || 'Failed to get alert stats',
+      );
     }
   }
 
@@ -1344,10 +1459,10 @@ export class AdminController {
    */
   @Post('alerts/:alertId/acknowledge')
   async acknowledgeAlert(@Param('alertId') alertId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     try {
-      await this.alertsService.acknowledge(alertId)
+      await this.alertsService.acknowledge(alertId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1358,12 +1473,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'Alert acknowledged',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1374,8 +1489,10 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to acknowledge alert')
+      });
+      throw new BadRequestException(
+        error.message || 'Failed to acknowledge alert',
+      );
     }
   }
 
@@ -1385,14 +1502,14 @@ export class AdminController {
    */
   @Post('alerts/:alertId/resolve')
   async resolveAlert(@Param('alertId') alertId: string, @Req() req?) {
-    const adminId = (req.user as any)?.userId
+    const adminId = req.user?.userId;
 
     if (!adminId) {
-      throw new BadRequestException('Admin ID not found in request')
+      throw new BadRequestException('Admin ID not found in request');
     }
 
     try {
-      await this.alertsService.resolve(alertId, adminId)
+      await this.alertsService.resolve(alertId, adminId);
 
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1403,12 +1520,12 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: {},
-      })
+      });
 
       return {
         success: true,
         message: 'Alert resolved',
-      }
+      };
     } catch (error) {
       await this.accessLogger.logAccess({
         adminUserId: adminId,
@@ -1419,20 +1536,24 @@ export class AdminController {
         ipAddress: req?.ip,
         userAgent: req?.get('user-agent'),
         metadata: { error: error.message },
-      })
-      throw new BadRequestException(error.message || 'Failed to resolve alert')
+      });
+      throw new BadRequestException(error.message || 'Failed to resolve alert');
     }
   }
 
-  private parseLimit(value: string | undefined, fallback: number, max: number): number {
-    const parsed = Number.parseInt(value ?? '', 10)
-    if (Number.isNaN(parsed)) return fallback
-    return Math.min(Math.max(parsed, 1), max)
+  private parseLimit(
+    value: string | undefined,
+    fallback: number,
+    max: number,
+  ): number {
+    const parsed = Number.parseInt(value ?? '', 10);
+    if (Number.isNaN(parsed)) return fallback;
+    return Math.min(Math.max(parsed, 1), max);
   }
 
   private parseOffset(value: string | undefined): number {
-    const parsed = Number.parseInt(value ?? '', 10)
-    if (Number.isNaN(parsed)) return 0
-    return Math.max(parsed, 0)
+    const parsed = Number.parseInt(value ?? '', 10);
+    if (Number.isNaN(parsed)) return 0;
+    return Math.max(parsed, 0);
   }
 }

@@ -1,5 +1,5 @@
-import { isCreditableEvent } from './onramp-status.guard'
-import { OnRampEvent } from '../types/onramp-event'
+import { isCreditableEvent } from './onramp-status.guard';
+import { OnRampEvent } from '../types/onramp-event';
 
 describe('OnRampStatusGuard', () => {
   describe('isCreditableEvent', () => {
@@ -12,10 +12,10 @@ describe('OnRampStatusGuard', () => {
         currency: 'USD',
         status: 'completed',
         rawPayloadHash: 'hash123',
-      }
+      };
 
-      expect(isCreditableEvent(event)).toBe(true)
-    })
+      expect(isCreditableEvent(event)).toBe(true);
+    });
 
     it('should return false for pending status', () => {
       const event: OnRampEvent = {
@@ -26,10 +26,10 @@ describe('OnRampStatusGuard', () => {
         currency: 'USD',
         status: 'pending',
         rawPayloadHash: 'hash123',
-      }
+      };
 
-      expect(isCreditableEvent(event)).toBe(false)
-    })
+      expect(isCreditableEvent(event)).toBe(false);
+    });
 
     it('should return false for failed status', () => {
       const event: OnRampEvent = {
@@ -40,10 +40,10 @@ describe('OnRampStatusGuard', () => {
         currency: 'EUR',
         status: 'failed',
         rawPayloadHash: 'hash456',
-      }
+      };
 
-      expect(isCreditableEvent(event)).toBe(false)
-    })
+      expect(isCreditableEvent(event)).toBe(false);
+    });
 
     it('should return false for refunded status', () => {
       const event: OnRampEvent = {
@@ -54,17 +54,17 @@ describe('OnRampStatusGuard', () => {
         currency: 'GBP',
         status: 'refunded',
         rawPayloadHash: 'hash789',
-      }
+      };
 
-      expect(isCreditableEvent(event)).toBe(false)
-    })
+      expect(isCreditableEvent(event)).toBe(false);
+    });
 
     it('should deny all non-completed statuses', () => {
       const statuses: Array<OnRampEvent['status']> = [
         'pending',
         'failed',
         'refunded',
-      ]
+      ];
 
       statuses.forEach((status) => {
         const event: OnRampEvent = {
@@ -75,11 +75,11 @@ describe('OnRampStatusGuard', () => {
           currency: 'USD',
           status,
           rawPayloadHash: 'hash_test',
-        }
+        };
 
-        expect(isCreditableEvent(event)).toBe(false)
-      })
-    })
+        expect(isCreditableEvent(event)).toBe(false);
+      });
+    });
 
     it('should only allow completed status', () => {
       const event: OnRampEvent = {
@@ -90,9 +90,9 @@ describe('OnRampStatusGuard', () => {
         currency: 'USD',
         status: 'completed',
         rawPayloadHash: 'hash_success',
-      }
+      };
 
-      expect(isCreditableEvent(event)).toBe(true)
-    })
-  })
-})
+      expect(isCreditableEvent(event)).toBe(true);
+    });
+  });
+});

@@ -1,3 +1,4 @@
+import 'dotenv/config'; // ⚡ Load .env file before any code reads process.env
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { EnvironmentValidator } from './config/env-validator';
@@ -13,11 +14,11 @@ async function bootstrap() {
 
   // Create app with production-safe logging
   const app = await NestFactory.create(AppModule, {
-    logger: prodConfig.isProduction 
+    logger: prodConfig.isProduction
       ? ['error'] // Production: Only errors
       : prodConfig.isStaging
-      ? ['error', 'warn']  // Staging: Errors + warnings
-      : ['error', 'warn', 'log', 'debug', 'verbose'], // Development: Full logging
+        ? ['error', 'warn'] // Staging: Errors + warnings
+        : ['error', 'warn', 'log', 'debug', 'verbose'], // Development: Full logging
   });
 
   // 🔒 CORS: Lock down to known domains in production

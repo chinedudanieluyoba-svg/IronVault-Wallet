@@ -1,8 +1,8 @@
-import { createHash } from 'crypto'
-import { OnRampEvent } from '../types/onramp-event'
+import { createHash } from 'crypto';
+import { OnRampEvent } from '../types/onramp-event';
 
 export function parseMoonPayWebhook(payload: any): OnRampEvent {
-  const status = payload.status?.toLowerCase()
+  const status = payload.status?.toLowerCase();
 
   return {
     provider: 'moonpay',
@@ -14,5 +14,5 @@ export function parseMoonPayWebhook(payload: any): OnRampEvent {
     rawPayloadHash: createHash('sha256')
       .update(JSON.stringify(payload))
       .digest('hex'),
-  }
+  };
 }

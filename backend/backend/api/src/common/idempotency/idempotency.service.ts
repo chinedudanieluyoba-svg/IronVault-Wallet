@@ -1,15 +1,15 @@
 /**
  * Idempotency Service
- * 
+ *
  * Purpose: Prevent duplicate operations (double credits/debits)
  * Critical for: Payments, webhooks, admin actions
- * 
+ *
  * How it works:
  * 1. Generate unique idempotency key for each operation
  * 2. Check if operation already exists
  * 3. If exists, return existing result (idempotent)
  * 4. If new, proceed with operation
- * 
+ *
  * Key format: {source}:{reference}:{action}
  * Example: webhook:moonpay_tx_123:credit
  */
@@ -53,9 +53,7 @@ export class IdempotencyService {
    * Check if operation already exists (idempotency check)
    * Returns existing ledger entry if found
    */
-  async checkIdempotency(
-    idempotencyKey: string,
-  ): Promise<IdempotencyResult> {
+  async checkIdempotency(idempotencyKey: string): Promise<IdempotencyResult> {
     const existing = await this.prisma.walletLedgerEntry.findUnique({
       where: { idempotencyKey },
     });
@@ -81,7 +79,12 @@ export class IdempotencyService {
     externalId: string,
     walletId: string,
   ): string {
-    return this.generateKey('webhook', `${provider}_${externalId}`, walletId, 'credit');
+    return this.generateKey(
+      'webhook',
+      `${provider}_${externalId}`,
+      walletId,
+      'credit',
+    );
   }
 
   /**
@@ -94,7 +97,12 @@ export class IdempotencyService {
     walletId: string,
     action: 'credit' | 'debit',
   ): string {
-    return this.generateKey('admin', `${adminId}_${timestamp}`, walletId, action);
+    return this.generateKey(
+      'admin',
+      `${adminId}_${timestamp}`,
+      walletId,
+      action,
+    );
   }
 
   /**
@@ -107,7 +115,12 @@ export class IdempotencyService {
     walletId: string,
     action: 'credit' | 'debit',
   ): string {
-    return this.generateKey('user', `${userId}_${transactionId}`, walletId, action);
+    return this.generateKey(
+      'user',
+      `${userId}_${transactionId}`,
+      walletId,
+      action,
+    );
   }
 
   /**
@@ -119,13 +132,13 @@ export class IdempotencyService {
     if (parts.length !== 4) return false;
 
     const [source, reference, walletId, action] = parts;
-    
+
     // Validate source
     if (!['webhook', 'admin', 'user'].includes(source)) return false;
-    
+
     // Validate action
     if (!['credit', 'debit'].includes(action)) return false;
-    
+
     // Validate non-empty parts
     if (!reference || !walletId) return false;
 

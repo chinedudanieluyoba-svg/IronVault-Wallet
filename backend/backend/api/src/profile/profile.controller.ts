@@ -3,9 +3,9 @@ import { JwtAuthGuard } from '../auth/jwt/jwt.guard';
 
 @Controller('profile')
 export class ProfileController {
-	@UseGuards(JwtAuthGuard)
-	@Get()
-	getProfile(@Req() req) {
-		return req.user;
-	}
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  getProfile(@Req() req) {
+    return req.user;
+  }
 }

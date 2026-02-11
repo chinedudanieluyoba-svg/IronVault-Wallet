@@ -1,14 +1,14 @@
 /**
  * Concurrency Lock Service
- * 
+ *
  * Purpose: Prevent race-condition balance bugs
  * Critical for: Concurrent wallet operations
- * 
+ *
  * How it works:
  * 1. Use PostgreSQL row-level locking (SELECT ... FOR UPDATE)
  * 2. Lock wallet row during balance update
  * 3. Release lock after transaction completes
- * 
+ *
  * Prevents:
  * - Lost updates (two transactions reading same balance)
  * - Race conditions (concurrent credits/debits)
@@ -34,11 +34,11 @@ export class ConcurrencyLockService {
   /**
    * Lock wallet row for update (SELECT ... FOR UPDATE)
    * MUST be called within a transaction
-   * 
+   *
    * This prevents race conditions by locking the row until transaction completes:
    * - Other transactions wait for lock to be released
    * - Ensures serialized access to wallet balance
-   * 
+   *
    * Example usage:
    * await prisma.$transaction(async (tx) => {
    *   const wallet = await lockService.lockWallet(tx, walletId);
@@ -76,10 +76,7 @@ export class ConcurrencyLockService {
    * Lock multiple wallets (for transfers between wallets)
    * Locks in consistent order to prevent deadlocks
    */
-  async lockWallets(
-    tx: any,
-    walletIds: string[],
-  ): Promise<LockedWallet[]> {
+  async lockWallets(tx: any, walletIds: string[]): Promise<LockedWallet[]> {
     // Sort wallet IDs to ensure consistent lock order (prevents deadlocks)
     const sortedIds = [...walletIds].sort();
 
@@ -121,9 +118,7 @@ export class ConcurrencyLockService {
    * (Advisory check - doesn't actually lock)
    */
   async isWalletLocked(walletId: string): Promise<boolean> {
-    const result = await this.prisma.$queryRaw<
-      Array<{ locked: boolean }>
-    >`
+    const result = await this.prisma.$queryRaw<Array<{ locked: boolean }>>`
       SELECT 
         EXISTS(
           SELECT 1 

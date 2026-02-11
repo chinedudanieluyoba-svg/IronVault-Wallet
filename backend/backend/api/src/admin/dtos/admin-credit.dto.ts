@@ -1,4 +1,4 @@
-import { validateAmount } from '../../common/validators/amount.validator'
+import { validateAmount } from '../../common/validators/amount.validator';
 
 /**
  * Manual admin credit (EMERGENCY ONLY)
@@ -7,32 +7,34 @@ import { validateAmount } from '../../common/validators/amount.validator'
  * - reason: must be 10-500 characters (for proper audit trail)
  */
 export class AdminCreditDto {
-  amount: number
-  reason: string
+  amount: number;
+  reason: string;
 
   constructor(data: any) {
     if (typeof data?.amount !== 'number') {
-      throw new Error('amount must be a number')
+      throw new Error('amount must be a number');
     }
 
-    const amountValidation = validateAmount(data.amount)
+    const amountValidation = validateAmount(data.amount);
     if (!amountValidation.isValid) {
-      throw new Error(amountValidation.error)
+      throw new Error(amountValidation.error);
     }
 
     if (typeof data?.reason !== 'string') {
-      throw new Error('reason must be a string')
+      throw new Error('reason must be a string');
     }
 
     if (data.reason.length < 10) {
-      throw new Error('reason must be at least 10 characters (for proper audit trail)')
+      throw new Error(
+        'reason must be at least 10 characters (for proper audit trail)',
+      );
     }
 
     if (data.reason.length > 500) {
-      throw new Error('reason too long (max 500 characters)')
+      throw new Error('reason too long (max 500 characters)');
     }
 
-    this.amount = data.amount
-    this.reason = data.reason
+    this.amount = data.amount;
+    this.reason = data.reason;
   }
 }

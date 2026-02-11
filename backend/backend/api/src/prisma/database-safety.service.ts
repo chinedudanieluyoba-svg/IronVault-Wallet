@@ -1,6 +1,6 @@
 /**
  * Database Safety Service
- * 
+ *
  * Validates database state and enforces production safety rules:
  * - Migrations must be applied cleanly
  * - No `prisma db push` in production
@@ -8,29 +8,29 @@
  * - Backup monitoring
  */
 
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 type MigrationStatus = {
-  id: string
-  checksum: string
-  finished_at: Date | null
-  migration_name: string
-  logs: string | null
-  rolled_back_at: Date | null
-  started_at: Date
-  applied_steps_count: number
-}
+  id: string;
+  checksum: string;
+  finished_at: Date | null;
+  migration_name: string;
+  logs: string | null;
+  rolled_back_at: Date | null;
+  started_at: Date;
+  applied_steps_count: number;
+};
 
 type MigrationReport = {
-  ok: boolean
-  total: number
-  applied: number
-  pending: number
-  failed: number
-  rolledBack: number
-  details?: string
-}
+  ok: boolean;
+  total: number;
+  applied: number;
+  pending: number;
+  failed: number;
+  rolledBack: number;
+  details?: string;
+};
 
 @Injectable()
 export class DatabaseSafetyService {
@@ -44,9 +44,9 @@ export class DatabaseSafetyService {
     try {
       // Check if _prisma_migrations table exists
       const tableCheck = await this.prisma.$queryRawUnsafe<any[]>(
-        "SELECT to_regclass('_prisma_migrations') AS table_name"
-      )
-      
+        "SELECT to_regclass('_prisma_migrations') AS table_name",
+      );
+
       if (!tableCheck[0]?.table_name) {
         return {
           ok: false,
@@ -55,33 +55,36 @@ export class DatabaseSafetyService {
           pending: 0,
           failed: 0,
           rolledBack: 0,
-          details: '_prisma_migrations table does not exist - database not initialized',
-        }
+          details:
+            '_prisma_migrations table does not exist - database not initialized',
+        };
       }
 
       // Get all migrations
       const migrations = await this.prisma.$queryRawUnsafe<MigrationStatus[]>(
-        'SELECT * FROM _prisma_migrations ORDER BY started_at ASC'
-      )
+        'SELECT * FROM _prisma_migrations ORDER BY started_at ASC',
+      );
 
-      const total = migrations.length
+      const total = migrations.length;
       const applied = migrations.filter(
-        (m) => m.finished_at !== null && m.rolled_back_at === null
-      ).length
-      const pending = migrations.filter((m) => m.finished_at === null).length
-      const rolledBack = migrations.filter((m) => m.rolled_back_at !== null).length
-      const failed = pending - rolledBack // Pending but not rolled back = failed
+        (m) => m.finished_at !== null && m.rolled_back_at === null,
+      ).length;
+      const pending = migrations.filter((m) => m.finished_at === null).length;
+      const rolledBack = migrations.filter(
+        (m) => m.rolled_back_at !== null,
+      ).length;
+      const failed = pending - rolledBack; // Pending but not rolled back = failed
 
       // All migrations should be cleanly applied
-      const ok = pending === 0 && rolledBack === 0 && failed === 0
+      const ok = pending === 0 && rolledBack === 0 && failed === 0;
 
-      let details: string | undefined
+      let details: string | undefined;
       if (!ok) {
-        const issues: string[] = []
-        if (pending > 0) issues.push(`${pending} pending`)
-        if (rolledBack > 0) issues.push(`${rolledBack} rolled back`)
-        if (failed > 0) issues.push(`${failed} failed`)
-        details = `Migration issues: ${issues.join(', ')}`
+        const issues: string[] = [];
+        if (pending > 0) issues.push(`${pending} pending`);
+        if (rolledBack > 0) issues.push(`${rolledBack} rolled back`);
+        if (failed > 0) issues.push(`${failed} failed`);
+        details = `Migration issues: ${issues.join(', ')}`;
       }
 
       return {
@@ -92,7 +95,7 @@ export class DatabaseSafetyService {
         failed,
         rolledBack,
         details,
-      }
+      };
     } catch (error: any) {
       return {
         ok: false,
@@ -102,7 +105,7 @@ export class DatabaseSafetyService {
         failed: 0,
         rolledBack: 0,
         details: `Migration check failed: ${error.message}`,
-      }
+      };
     }
   }
 
@@ -111,39 +114,46 @@ export class DatabaseSafetyService {
    * Ensures dangerous operations are blocked
    */
   validateProductionSafety(): { ok: boolean; issues: string[] } {
-    const issues: string[] = []
-    const nodeEnv = process.env.NODE_ENV
+    const issues: string[] = [];
+    const nodeEnv = process.env.NODE_ENV;
 
     // CRITICAL: Never use `prisma db push` in production
     // It bypasses migration history and can cause data loss
     if (nodeEnv === 'production') {
       // Check for common env vars that suggest db push was used
       if (process.env.PRISMA_DB_PUSH_ALLOWED === 'true') {
-        issues.push('PRISMA_DB_PUSH_ALLOWED=true is FORBIDDEN in production')
+        issues.push('PRISMA_DB_PUSH_ALLOWED=true is FORBIDDEN in production');
       }
 
       // Validate connection string uses SSL in production
       const dbUrl =
         process.env.DATABASE_URL_PROD ||
         process.env.DATABASE_URL ||
-        process.env.DATABASE_URL_DEV
-      if (dbUrl && !dbUrl.includes('sslmode=require') && !dbUrl.includes('ssl=true')) {
-        issues.push('Database connection must use SSL in production')
+        process.env.DATABASE_URL_DEV;
+      if (
+        dbUrl &&
+        !dbUrl.includes('sslmode=require') &&
+        !dbUrl.includes('ssl=true')
+      ) {
+        issues.push('Database connection must use SSL in production');
       }
 
       // Validate connection pooling is configured
-      const maxConnections = parseInt(process.env.DATABASE_MAX_CONNECTIONS || '10', 10)
+      const maxConnections = parseInt(
+        process.env.DATABASE_MAX_CONNECTIONS || '10',
+        10,
+      );
       if (maxConnections > 100) {
         issues.push(
-          `DATABASE_MAX_CONNECTIONS=${maxConnections} is too high (recommend ≤100)`
-        )
+          `DATABASE_MAX_CONNECTIONS=${maxConnections} is too high (recommend ≤100)`,
+        );
       }
     }
 
     return {
       ok: issues.length === 0,
       issues,
-    }
+    };
   }
 
   /**
@@ -151,18 +161,18 @@ export class DatabaseSafetyService {
    * Useful for backup monitoring
    */
   async getDatabaseStats(): Promise<{
-    sizeBytes: number
-    sizeMB: number
-    tableCount: number
-    tables: Array<{ name: string; rowCount: number }>
+    sizeBytes: number;
+    sizeMB: number;
+    tableCount: number;
+    tables: Array<{ name: string; rowCount: number }>;
   }> {
     try {
       // Get database size
       const sizeQuery = await this.prisma.$queryRawUnsafe<any[]>(
-        "SELECT pg_database_size(current_database()) AS size_bytes"
-      )
-      const sizeBytes = parseInt(sizeQuery[0]?.size_bytes || '0', 10)
-      const sizeMB = Math.round(sizeBytes / 1024 / 1024)
+        'SELECT pg_database_size(current_database()) AS size_bytes',
+      );
+      const sizeBytes = parseInt(sizeQuery[0]?.size_bytes || '0', 10);
+      const sizeMB = Math.round(sizeBytes / 1024 / 1024);
 
       // Get table counts
       const tables = await this.prisma.$queryRawUnsafe<any[]>(`
@@ -172,7 +182,7 @@ export class DatabaseSafetyService {
         FROM pg_stat_user_tables
         WHERE schemaname = 'public'
         ORDER BY n_live_tup DESC
-      `)
+      `);
 
       return {
         sizeBytes,
@@ -182,9 +192,9 @@ export class DatabaseSafetyService {
           name: t.name,
           rowCount: parseInt(t.row_count || '0', 10),
         })),
-      }
+      };
     } catch (error: any) {
-      throw new Error(`Failed to get database stats: ${error.message}`)
+      throw new Error(`Failed to get database stats: ${error.message}`);
     }
   }
 
@@ -193,34 +203,37 @@ export class DatabaseSafetyService {
    * Production requires backup strategy
    */
   validateBackupConfig(): { ok: boolean; issues: string[] } {
-    const issues: string[] = []
-    const nodeEnv = process.env.NODE_ENV
+    const issues: string[] = [];
+    const nodeEnv = process.env.NODE_ENV;
 
     if (nodeEnv === 'production') {
       // Check for backup configuration
-      if (!process.env.BACKUP_ENABLED || process.env.BACKUP_ENABLED !== 'true') {
-        issues.push('BACKUP_ENABLED must be set to "true" in production')
+      if (
+        !process.env.BACKUP_ENABLED ||
+        process.env.BACKUP_ENABLED !== 'true'
+      ) {
+        issues.push('BACKUP_ENABLED must be set to "true" in production');
       }
 
       if (!process.env.BACKUP_RETENTION_DAYS) {
-        issues.push('BACKUP_RETENTION_DAYS must be configured')
+        issues.push('BACKUP_RETENTION_DAYS must be configured');
       }
 
-      const lastBackupTest = process.env.LAST_BACKUP_RESTORE_TEST_DATE
+      const lastBackupTest = process.env.LAST_BACKUP_RESTORE_TEST_DATE;
       if (!lastBackupTest) {
         issues.push(
-          'LAST_BACKUP_RESTORE_TEST_DATE not set - backups must be tested regularly'
-        )
+          'LAST_BACKUP_RESTORE_TEST_DATE not set - backups must be tested regularly',
+        );
       } else {
         // Warn if backup restore not tested in last 90 days
-        const lastTest = new Date(lastBackupTest)
+        const lastTest = new Date(lastBackupTest);
         const daysSinceTest = Math.floor(
-          (Date.now() - lastTest.getTime()) / (1000 * 60 * 60 * 24)
-        )
+          (Date.now() - lastTest.getTime()) / (1000 * 60 * 60 * 24),
+        );
         if (daysSinceTest > 90) {
           issues.push(
-            `Backup restore test is ${daysSinceTest} days old - test backups every 90 days`
-          )
+            `Backup restore test is ${daysSinceTest} days old - test backups every 90 days`,
+          );
         }
       }
     }
@@ -228,6 +241,6 @@ export class DatabaseSafetyService {
     return {
       ok: issues.length === 0,
       issues,
-    }
+    };
   }
 }

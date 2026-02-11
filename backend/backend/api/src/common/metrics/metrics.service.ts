@@ -1,14 +1,14 @@
 /**
  * MetricsService - Track key operational metrics
- * 
+ *
  * Purpose: Provide insight into system health and transaction patterns
- * 
+ *
  * Tracked Metrics:
  * - Wallet operations (credit, debit, balance checks)
  * - Webhook processing (success, failures, retries)
  * - Error rates
  * - Performance timings
- * 
+ *
  * Output: Structured logs that can be ingested by monitoring systems
  * (Datadog, New Relic, CloudWatch, etc.)
  */
@@ -19,7 +19,13 @@ import { AuditLogger } from '../logging/audit.logger';
 export interface WalletMetric {
   walletId: string;
   userId: string;
-  operation: 'CREDIT' | 'DEBIT' | 'BALANCE_CHECK' | 'CREATE' | 'FREEZE' | 'UNFREEZE';
+  operation:
+    | 'CREDIT'
+    | 'DEBIT'
+    | 'BALANCE_CHECK'
+    | 'CREATE'
+    | 'FREEZE'
+    | 'UNFREEZE';
   amount?: number;
   currency: string;
   balanceBefore?: number;
@@ -91,7 +97,7 @@ export class MetricsService {
     };
 
     const message = `Wallet ${metric.operation}: ${metric.success ? 'SUCCESS' : 'FAILED'}`;
-    
+
     if (metric.success) {
       this.auditLogger.info(context, message, metadata);
     } else {

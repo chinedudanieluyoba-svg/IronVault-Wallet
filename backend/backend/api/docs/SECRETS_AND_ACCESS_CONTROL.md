@@ -69,7 +69,14 @@ async function getSecret(name) {
 
 **1. Generate New Secret**
 ```bash
-# Generate cryptographically secure random string
+# Method 1: Use the built-in script (recommended)
+cd backend/backend/api
+npm run generate:jwt-secret
+
+# Method 2: Use Node.js crypto directly
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Method 3: Generate cryptographically secure random string with OpenSSL
 openssl rand -base64 32
 ```
 

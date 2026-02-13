@@ -27,7 +27,8 @@
     "db:backup:prod": "./scripts/backup.sh production",
     "db:restore": "./scripts/restore.sh",
     "db:test-backup": "./scripts/test-backup.sh staging",
-    "reconcile:balance": "ts-node scripts/reconcile-balance.ts"
+    "reconcile:balance": "ts-node scripts/reconcile-balance.ts",
+    "generate:jwt-secret": "node scripts/generate-jwt-secret.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

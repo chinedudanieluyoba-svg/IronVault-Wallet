@@ -114,13 +114,29 @@ Or add a **Deploy Hook** to run migrations automatically (see below).
 
 ### Generating Secrets
 
+Generate a secure JWT secret using one of these methods:
+
 ```bash
-# JWT_SECRET (minimum 32 characters)
+# Method 1: Use the built-in script (recommended - provides detailed instructions)
+cd backend/backend/api
+npm run generate:jwt-secret
+
+# Method 2: Use Node.js crypto directly (used in the command mentioned in docs)
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Method 3: Use OpenSSL (shorter secret, but still secure)
 openssl rand -base64 32
 
-# Or use a longer secret
+# Method 4: Use OpenSSL for longer secret
 openssl rand -base64 64
 ```
+
+**Best Practice:** Use the built-in script (`npm run generate:jwt-secret`) as it:
+- Generates a 128-character cryptographically secure secret
+- Provides step-by-step setup instructions
+- Automatically calculates the rotation date
+- Includes security reminders
+
 
 ### CORS Configuration
 

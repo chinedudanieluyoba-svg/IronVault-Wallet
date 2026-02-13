@@ -37,7 +37,12 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env with your database credentials
+
+# Generate a secure JWT secret
+npm run generate:jwt-secret
+# Copy the generated secret and add it to your .env file
+
+# Edit .env with your database credentials and JWT secret
 
 # Generate Prisma client
 npm run prisma:generate
@@ -269,6 +274,37 @@ npm run test:e2e           # Run end-to-end tests
 # Code Quality
 npm run lint               # Run ESLint
 npm run format             # Run Prettier
+
+# Security & Secrets
+npm run generate:jwt-secret # Generate secure JWT secret
+```
+
+### Generating JWT Secrets
+
+To generate a secure JWT secret for your application:
+
+```bash
+# Method 1: Use the built-in script (recommended)
+npm run generate:jwt-secret
+
+# Method 2: Use Node.js crypto directly
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Method 3: Use OpenSSL
+openssl rand -base64 32
+```
+
+The built-in script (`npm run generate:jwt-secret`) provides:
+- 128-character cryptographically secure random string
+- Step-by-step instructions for adding to `.env`
+- Automatic rotation date calculation
+- Security best practices reminders
+
+**Important:**
+- Never commit `.env` files to version control
+- Use different secrets for development, staging, and production
+- Rotate secrets every 90 days in production
+- Store production secrets in a secure secret manager (AWS Secrets Manager, HashiCorp Vault, etc.)
 ```
 
 ### Environment Variables
@@ -277,7 +313,7 @@ npm run format             # Run Prettier
 ```bash
 NODE_ENV=development
 DATABASE_URL=postgresql://user:pass@localhost:5432/wallet_db
-JWT_SECRET=your-jwt-secret
+JWT_SECRET=your-jwt-secret  # Generate with: npm run generate:jwt-secret
 JWT_REFRESH_SECRET=your-refresh-secret
 MOONPAY_WEBHOOK_SECRET=your-moonpay-secret
 ```

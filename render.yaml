@@ -10,7 +10,7 @@ services:
     region: oregon  # Change to your preferred region
     plan: starter   # Options: starter, standard, pro, pro plus
     branch: main
-    rootDir: backend/backend/api
+    rootDir: backend
     buildCommand: npm install && npm run prisma:generate && npm run build
     startCommand: npm run migrate:deploy && npm run start:prod
     healthCheckPath: /health

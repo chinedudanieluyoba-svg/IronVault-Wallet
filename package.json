@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "backend/api"
+    "backend",
+    "web"
   ],
   "scripts": {
-    "install:backend": "cd backend/api && npm install",
-    "build": "cd backend/api && npm install && npm run prisma:generate && npm run build",
-    "start": "cd backend/api && npm run start:prod",
-    "migrate": "cd backend/api && npx prisma migrate deploy"
+    "install:backend": "cd backend && npm install",
+    "build": "cd backend && npm install && npm run prisma:generate && npm run build",
+    "start": "cd backend && npm run start:prod",
+    "migrate": "cd backend && npx prisma migrate deploy"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",

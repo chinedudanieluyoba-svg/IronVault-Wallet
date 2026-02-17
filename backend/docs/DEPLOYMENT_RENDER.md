@@ -33,7 +33,7 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
    - **Name**: `cryptowallet-api`
    - **Region**: Same as database
    - **Branch**: `main`
-   - **Root Directory**: `backend/backend/api` (if monorepo)
+   - **Root Directory**: `backend` (if monorepo)
    - **Runtime**: `Node`
    - **Build Command**: `npm install && npm run prisma:generate && npm run build`
    - **Start Command**: `npm run start:prod`
@@ -104,7 +104,7 @@ After first deployment:
 1. Go to your web service → **"Shell"** tab
 2. Run migrations:
    ```bash
-   cd /opt/render/project/src/backend/backend/api
+   cd /opt/render/project/src/backend
    npx prisma migrate deploy
    ```
 
@@ -118,7 +118,7 @@ Generate a secure JWT secret using one of these methods:
 
 ```bash
 # Method 1: Use the built-in script (recommended - provides detailed instructions)
-cd backend/backend/api
+cd backend
 npm run generate:jwt-secret
 
 # Method 2: Use Node.js crypto directly (used in the command mentioned in docs)
@@ -373,7 +373,7 @@ Error: Migration failed to apply
 1. Go to **Shell** tab
 2. Check migration status:
    ```bash
-   cd /opt/render/project/src/backend/backend/api
+   cd /opt/render/project/src/backend
    npx prisma migrate status
    ```
 3. Apply manually:

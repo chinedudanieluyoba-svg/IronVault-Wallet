@@ -70,7 +70,7 @@ async function getSecret(name) {
 **1. Generate New Secret**
 ```bash
 # Method 1: Use the built-in script (recommended)
-cd backend/backend/api
+cd backend
 npm run generate:jwt-secret
 
 # Method 2: Use Node.js crypto directly

@@ -1,10 +1,14 @@
 import Header from "@/components/Header";
+import { HealthCheck } from "@/components/HealthCheck";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-50">
       <Header />
       <main className="mx-auto w-full max-w-5xl px-6 py-16">
+        <div className="mb-8 flex justify-center">
+          <HealthCheck />
+        </div>
         <div className="rounded-3xl border border-zinc-200 bg-white p-10 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.35)]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-zinc-500">
             Secure Crypto Wallet

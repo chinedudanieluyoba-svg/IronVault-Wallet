@@ -1,6 +1,10 @@
 # Local Testing Guide
 
-## ✅ Backend Structure Verification
+## Documentation Map
+
+See [Architecture](./docs/architecture.md), [Deployment](./docs/deployment.md), [Security](./docs/security.md), and [Backend API](./backend/README.md).
+
+## Backend Structure Verification
 
 The backend contains all required files:
 ```
@@ -20,7 +24,7 @@ backend/
 └── node_modules/
 ```
 
-## 🏗️ Backend Build Verification
+## Backend Build Verification
 
 ✅ **Build Status: SUCCESS**
 ```bash
@@ -33,7 +37,7 @@ npm run build      # Compilation successful → dist/ folder created
 - `GET /` → Returns "Hello World!"
 - `GET /health` → Returns `{ status: "ok", timestamp: "2024-02-17T..." }`
 
-## 🎨 Frontend Structure Verification
+## Frontend Structure Verification
 
 The frontend is built with Next.js 16.1.6 using App Router:
 ```
@@ -55,7 +59,7 @@ web/
 └── node_modules/
 ```
 
-## 🚀 Local Testing Instructions
+## Local Testing Instructions
 
 ### Option 1: Run Backend & Frontend Sequentially
 
@@ -91,7 +95,7 @@ npm run dev          # Runs on http://localhost:3000
 
 Note: The `web/.env.local` file is configured for `NEXT_PUBLIC_API_URL=http://localhost:3001`
 
-## 🔗 Frontend-to-Backend Connection
+## Frontend-to-Backend Connection
 
 ### Health Check Component
 The frontend HealthCheck component (`web/components/HealthCheck.tsx`):
@@ -111,7 +115,7 @@ export async function fetchBackendHealth() {
 }
 ```
 
-## 🧪 Testing the Connection
+## Testing the Connection
 
 ### Manual Test via curl
 
@@ -134,7 +138,7 @@ curl http://localhost:3000/
 4. Stop backend server → Badge turns **red with error message**
 5. Restart backend → Badge turns green again
 
-## 📝 Environment Variables
+## Environment Variables
 
 ### Backend Default Port
 - Port: `3000` (set via `PORT` environment variable)
@@ -151,7 +155,7 @@ For production (when deploying):
 NEXT_PUBLIC_API_URL=https://your-railway-backend.railway.app
 ```
 
-## ✅ Build Verification
+## Build Verification
 
 Both applications build successfully:
 
@@ -167,7 +171,26 @@ Both applications build successfully:
 ✅ Ready for: npm start (production server)
 ```
 
-## 🔄 Development Workflow
+## Docker Build Flow (Backend)
+
+Backend Docker build uses this layer order for dependency caching:
+
+```dockerfile
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+```
+
+Build and run:
+
+```bash
+cd backend
+docker build -t cryptowallet-api .
+docker run --rm -p 3000:3000 --env-file .env cryptowallet-api
+```
+
+## Development Workflow
 
 **Continuous Development:**
 ```bash
@@ -189,7 +212,7 @@ cd backend && npm run build && npm run start:prod
 cd web && npm run build && npm start
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 ```bash
@@ -222,7 +245,7 @@ cd backend && rm -rf node_modules package-lock.json && npm install
 cd ../web && rm -rf node_modules package-lock.json && npm install
 ```
 
-## 📊 Status Summary
+## Status Summary
 
 | Component | Status | Location | Port |
 |-----------|--------|----------|------|

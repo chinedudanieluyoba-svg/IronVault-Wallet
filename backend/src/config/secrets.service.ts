@@ -42,7 +42,7 @@ export class SecretsService {
     const nodeEnv = process.env.NODE_ENV;
     if (nodeEnv === 'production') {
       secrets.push(
-        this.checkSecret('DATABASE_URL_PROD', 'DB_CREDENTIALS_ROTATION_DATE'),
+        this.checkSecret('DATABASE_URL', 'DB_CREDENTIALS_ROTATION_DATE'),
       );
     }
 
@@ -183,10 +183,7 @@ export class SecretsService {
     const issues: string[] = [];
 
     // Check if using root/postgres user (BAD)
-    const dbUrl =
-      process.env.DATABASE_URL_PROD ||
-      process.env.DATABASE_URL ||
-      process.env.DATABASE_URL_DEV;
+    const dbUrl = process.env.DATABASE_URL;
 
     if (dbUrl) {
       try {

@@ -92,13 +92,13 @@ curl https://api.yourdomain.com/ready
 ### Database Connection Issues
 ```bash
 # Check connection
-psql $DATABASE_URL_PROD -c "SELECT 1"
+psql $DATABASE_URL -c "SELECT 1"
 
 # Check connection pool settings
 echo $DATABASE_MAX_CONNECTIONS
 
 # View active connections
-psql $DATABASE_URL_PROD -c "SELECT count(*) FROM pg_stat_activity"
+psql $DATABASE_URL -c "SELECT count(*) FROM pg_stat_activity"
 ```
 
 ## Safety Rules

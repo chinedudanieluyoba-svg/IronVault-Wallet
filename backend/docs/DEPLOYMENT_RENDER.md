@@ -1,4 +1,9 @@
-# 🚀 Deploying to Render
+# Deploying to Render
+
+> Deprecated for this project.
+>
+> This platform now deploys backend on Railway and frontend on Vercel.
+> Use [DEPLOYMENT_RAILWAY.md](./DEPLOYMENT_RAILWAY.md) for backend setup and [../../docs/deployment.md](../../docs/deployment.md) for full platform deployment.
 
 This guide walks you through deploying the Crypto Wallet Platform API to [Render](https://render.com).
 
@@ -23,7 +28,7 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
 4. Click **"Create Database"**
 5. **Copy the Internal Database URL** (starts with `postgresql://`)
    - ⚠️ Use **Internal Database URL** for better performance
-   - Save this - you'll need it for `DATABASE_URL_PROD`
+   - Save this - you'll need it for `DATABASE_URL`
 
 ### 2. Create Web Service
 
@@ -50,7 +55,7 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
 | Variable | Value | How to Get |
 |----------|-------|------------|
 | `NODE_ENV` | `production` | Fixed value (auto-set in Blueprint) |
-| `DATABASE_URL_PROD` | `postgresql://user:pass@host/db` | From Step 1. Blueprint sets placeholder - update after first deploy |
+| `DATABASE_URL` | `postgresql://user:pass@host/db` | From Step 1. Blueprint sets placeholder - update after first deploy |
 | `JWT_SECRET` | Generate secure secret | Blueprint sets placeholder. Update with: `openssl rand -base64 32` or use Render's Generate button |
 | `MOONPAY_WEBHOOK_SECRET` | Your MoonPay secret | From [MoonPay Dashboard](https://www.moonpay.com/dashboard). Placeholder set in Blueprint - update after first deploy |
 | `CORS_ALLOWED_ORIGINS` | `https://yourdomain.com` | Your frontend domain(s), comma-separated. Placeholder set in Blueprint - update after first deploy |
@@ -80,7 +85,7 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
    ```
    ✅ Environment variables validated
    ⚠️  Optional environment variables not set (using defaults):
-      🚨 CRITICAL WARNING: DATABASE_URL_PROD is using a placeholder value.
+      🚨 CRITICAL WARNING: DATABASE_URL is using a placeholder value.
       🚨 CRITICAL WARNING: JWT_SECRET is using a placeholder value.
       🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is using a placeholder value.
       🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value.
@@ -91,7 +96,7 @@ This guide walks you through deploying the Crypto Wallet Platform API to [Render
    ```
 4. **Important:** Update all placeholder values immediately after first deployment:
    - Go to **Environment** tab in Render Dashboard
-   - Update `DATABASE_URL_PROD` with the Internal Database URL from your PostgreSQL service
+   - Update `DATABASE_URL` with the Internal Database URL from your PostgreSQL service
    - Update `JWT_SECRET` with a secure random value (`openssl rand -base64 32` or use Render's Generate button)
    - Update `MOONPAY_WEBHOOK_SECRET` with your actual MoonPay webhook secret
    - Update `CORS_ALLOWED_ORIGINS` with your actual frontend domain(s)
@@ -179,7 +184,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL_PROD
+      - key: DATABASE_URL
         fromDatabase:
           name: cryptowallet-db-prod
           property: connectionString
@@ -254,7 +259,7 @@ Render provides two database URLs:
 - **External**: For connecting from outside Render (slower)
 - **Internal**: For connecting from Render services (faster, more secure)
 
-Always use **Internal Database URL** for `DATABASE_URL_PROD`.
+Always use **Internal Database URL** for `DATABASE_URL`.
 
 ### 4. Enable Webhook IP Filtering (Optional)
 
@@ -322,7 +327,7 @@ This is expected on first deployment. The app will start successfully but you sh
 ```
 ❌ CRITICAL: Missing required environment variables
 
-  ❌ DATABASE_URL_PROD
+   ❌ DATABASE_URL
   ❌ JWT_SECRET
 ```
 
@@ -332,7 +337,7 @@ This is expected on first deployment. The app will start successfully but you sh
 
 **Solution:**
 1. Go to **Environment** tab in Render Dashboard
-2. Verify `DATABASE_URL_PROD` and `JWT_SECRET` are set
+2. Verify `DATABASE_URL` and `JWT_SECRET` are set
 3. Click **"Manual Deploy"** → **"Deploy latest commit"**
 4. After successful deployment, add `MOONPAY_WEBHOOK_SECRET` and `CORS_ALLOWED_ORIGINS` for full functionality
 
@@ -344,7 +349,7 @@ Error: connect ETIMEDOUT
 ```
 
 **Solutions:**
-1. Verify `DATABASE_URL_PROD` is correct
+1. Verify `DATABASE_URL` is correct
 2. Use **Internal Database URL** (not External)
 3. Check database is in same region as web service
 4. Verify database plan supports SSL (all Render plans do)

@@ -39,7 +39,7 @@ TEST_DB_NAME="cryptowallet_test_restore_${TIMESTAMP}"
 
 case $ENVIRONMENT in
   staging)
-    BASE_URL="${DATABASE_URL_STAGING}"
+    BASE_URL="${DATABASE_URL}"
     ;;
   *)
     echo "❌ Backup testing only supported for staging environment"

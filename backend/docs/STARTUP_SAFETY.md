@@ -19,9 +19,7 @@ The following variables **MUST** be set based on `NODE_ENV`:
 - `JWT_SECRET` - Secret for signing JWT tokens (min 32 chars)
 
 ### Database (Based on NODE_ENV) - Strictly Required
-- `DATABASE_URL_DEV` - If `NODE_ENV=development`
-- `DATABASE_URL_STAGING` - If `NODE_ENV=staging`
-- `DATABASE_URL_PROD` - If `NODE_ENV=production`
+- `DATABASE_URL` - Required in all environments
 
 ### Optional Secrets (Strongly Recommended)
 - `MOONPAY_WEBHOOK_SECRET` - MoonPay webhook signature verification (app will start without this, but webhook validation will fail)
@@ -45,8 +43,8 @@ The following variables **MUST** be set based on `NODE_ENV`:
 ✅ Environment variables validated
 
 ⚠️  Optional environment variables not set (using defaults):
-   🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is NOT SET. MoonPay webhook signature verification secret (webhook validation will fail without this). Set it in your deployment platform (e.g., Render Dashboard → Environment) for full functionality.
-   🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production. CORS will be disabled and API requests from frontend will fail. Set it in your deployment platform (e.g., Render Dashboard → Environment).
+   🚨 CRITICAL WARNING: MOONPAY_WEBHOOK_SECRET is NOT SET. MoonPay webhook signature verification secret (webhook validation will fail without this). Set it in your deployment platform (e.g., Railway Variables) for full functionality.
+   🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production. CORS will be disabled and API requests from frontend will fail. Set it in your deployment platform (e.g., Railway Variables).
 
 📦 NODE_ENV: production
 🗄️  DATABASE: postgresql://user:***@db.neon.tech/cryptowallet
@@ -63,7 +61,7 @@ The following variables **MUST** be set based on `NODE_ENV`:
 
 The following environment variables MUST be set:
 
-  ❌ DATABASE_URL_PROD
+   ❌ DATABASE_URL
      → Production PostgreSQL connection string (NODE_ENV=production)
 
   ❌ JWT_SECRET
@@ -72,7 +70,7 @@ The following environment variables MUST be set:
 Application cannot start without these variables.
 Set them in your .env file or environment.
 
-Error: Missing required environment variables: DATABASE_URL_PROD, JWT_SECRET
+Error: Missing required environment variables: DATABASE_URL, JWT_SECRET
     at EnvironmentValidator.validate
     at bootstrap
 ```
@@ -125,8 +123,8 @@ See:
 
 ## Production Deployment
 
-For production deployment on Render (or other platforms), see:
-- [**Deployment Guide (Render)**](./DEPLOYMENT_RENDER.md) - Complete setup instructions
-- [**Quick Fix Guide**](./DEPLOYMENT_QUICKFIX.md) - Troubleshoot deployment errors
+For production deployment on Railway (backend) + Vercel (frontend), see:
+- [**Backend Deployment Guide (Railway)**](./DEPLOYMENT_RAILWAY.md) - Backend service setup
+- [**Platform Deployment Guide**](../../docs/deployment.md) - Monorepo topology (Railway + Vercel + Neon)
 
 These guides explain how to set environment variables on deployment platforms.

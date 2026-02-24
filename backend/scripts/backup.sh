@@ -21,26 +21,10 @@ if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi
 
-# Determine database URL based on environment
-case $ENVIRONMENT in
-  production)
-    DB_URL="${DATABASE_URL_PROD}"
-    ;;
-  staging)
-    DB_URL="${DATABASE_URL_STAGING}"
-    ;;
-  development)
-    DB_URL="${DATABASE_URL_DEV}"
-    ;;
-  *)
-    echo "❌ Invalid environment: ${ENVIRONMENT}"
-    echo "Usage: ./backup.sh [production|staging|development]"
-    exit 1
-    ;;
-esac
+DB_URL="${DATABASE_URL}"
 
 if [ -z "$DB_URL" ]; then
-  echo "❌ Database URL not configured for ${ENVIRONMENT}"
+  echo "❌ DATABASE_URL is not configured"
   exit 1
 fi
 

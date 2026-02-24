@@ -34,31 +34,19 @@ if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi
 
-# Determine database URL
-case $ENVIRONMENT in
-  production)
-    DB_URL="${DATABASE_URL_PROD}"
-    echo "⚠️  PRODUCTION RESTORE - Extra confirmation required"
-    read -p "Type 'RESTORE_PRODUCTION' to confirm: " PROD_CONFIRM
-    if [ "$PROD_CONFIRM" != "RESTORE_PRODUCTION" ]; then
-      echo "❌ Production restore cancelled"
-      exit 0
-    fi
-    ;;
-  staging)
-    DB_URL="${DATABASE_URL_STAGING}"
-    ;;
-  development)
-    DB_URL="${DATABASE_URL_DEV}"
-    ;;
-  *)
-    echo "❌ Invalid environment: ${ENVIRONMENT}"
-    exit 1
-    ;;
-esac
+DB_URL="${DATABASE_URL}"
+
+if [ "$ENVIRONMENT" = "production" ]; then
+  echo "⚠️  PRODUCTION RESTORE - Extra confirmation required"
+  read -p "Type 'RESTORE_PRODUCTION' to confirm: " PROD_CONFIRM
+  if [ "$PROD_CONFIRM" != "RESTORE_PRODUCTION" ]; then
+    echo "❌ Production restore cancelled"
+    exit 0
+  fi
+fi
 
 if [ -z "$DB_URL" ]; then
-  echo "❌ Database URL not configured for ${ENVIRONMENT}"
+  echo "❌ DATABASE_URL is not configured"
   exit 1
 fi
 

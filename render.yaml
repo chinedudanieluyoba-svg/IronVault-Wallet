@@ -24,7 +24,7 @@ services:
       # Database Connection (linked to database below)
       # IMPORTANT: Update this placeholder value in Render Dashboard → Environment after first deployment
       # The database connection string will be available in the Database service details
-      - key: DATABASE_URL_PROD
+      - key: DATABASE_URL
         value: PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD
       
       # JWT Authentication
@@ -75,10 +75,10 @@ databases:
     ipAllowList: []  # Empty = allow all Render services
 
 # After initial deployment:
-# 1. The app will start with placeholder values for DATABASE_URL_PROD, JWT_SECRET, MOONPAY_WEBHOOK_SECRET, and CORS_ALLOWED_ORIGINS
+# 1. The app will start with placeholder values for DATABASE_URL, JWT_SECRET, MOONPAY_WEBHOOK_SECRET, and CORS_ALLOWED_ORIGINS
 # 2. Check the logs for "CRITICAL WARNING" messages about placeholder values
 # 3. Go to Render Dashboard → Your Service → Environment tab
-# 4. Update DATABASE_URL_PROD with the Internal Database URL from your PostgreSQL service
+# 4. Update DATABASE_URL with the Internal Database URL from your PostgreSQL service
 #    - Go to your database service → Connection → Internal Database URL → Copy
 # 5. Update JWT_SECRET with a secure random value
 #    - Generate with: openssl rand -base64 32

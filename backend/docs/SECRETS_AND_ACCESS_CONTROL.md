@@ -254,10 +254,10 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO cryptowallet_app;
 **Connection String:**
 ```bash
 # ✅ CORRECT (dedicated app user)
-DATABASE_URL_PROD=postgresql://cryptowallet_app:password@host.neon.tech/cryptowallet?sslmode=require
+DATABASE_URL=postgresql://cryptowallet_app:password@host.neon.tech/cryptowallet?sslmode=require
 
 # ❌ WRONG (root/admin)
-DATABASE_URL_PROD=postgresql://postgres:password@host.neon.tech/cryptowallet?sslmode=require
+DATABASE_URL=postgresql://postgres:password@host.neon.tech/cryptowallet?sslmode=require
 ```
 
 ### Readiness Check

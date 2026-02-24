@@ -93,7 +93,7 @@ const OPTIONAL_ENV_VARS: EnvVar[] = [
 // Constants for validation messages
 const PLACEHOLDER_VALUE = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
 const DEPLOYMENT_PLATFORM_LOCATION =
-  'your deployment platform (e.g., Render Dashboard → Environment)';
+  'your deployment platform (e.g., Railway Variables)';
 
 export class EnvironmentValidator {
   /**
@@ -124,50 +124,18 @@ export class EnvironmentValidator {
       throw new Error('NODE_ENV environment variable must be set');
     }
 
-    // Check database URL based on NODE_ENV
-    let dbUrl: string | undefined;
-    if (nodeEnv === 'production') {
-      dbUrl = process.env.DATABASE_URL_PROD;
-      if (this.isEmptyOrWhitespace(dbUrl)) {
-        missing.push({
-          key: 'DATABASE_URL_PROD',
-          required: true,
-          description:
-            'Production PostgreSQL connection string (NODE_ENV=production)',
-        });
-      } else if (this.isPlaceholder(dbUrl)) {
-        warnings.push(
-          `🚨 CRITICAL WARNING: DATABASE_URL_PROD is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
-        );
-      }
-    } else if (nodeEnv === 'staging') {
-      dbUrl = process.env.DATABASE_URL_STAGING;
-      if (this.isEmptyOrWhitespace(dbUrl)) {
-        missing.push({
-          key: 'DATABASE_URL_STAGING',
-          required: true,
-          description:
-            'Staging PostgreSQL connection string (NODE_ENV=staging)',
-        });
-      } else if (this.isPlaceholder(dbUrl)) {
-        warnings.push(
-          `🚨 CRITICAL WARNING: DATABASE_URL_STAGING is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
-        );
-      }
-    } else {
-      dbUrl = process.env.DATABASE_URL_DEV;
-      if (this.isEmptyOrWhitespace(dbUrl)) {
-        missing.push({
-          key: 'DATABASE_URL_DEV',
-          required: true,
-          description:
-            'Development PostgreSQL connection string (NODE_ENV=development)',
-        });
-      } else if (this.isPlaceholder(dbUrl)) {
-        warnings.push(
-          `🚨 CRITICAL WARNING: DATABASE_URL_DEV is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
-        );
-      }
+    // Check database URL (single variable across all environments)
+    const dbUrl = process.env.DATABASE_URL;
+    if (this.isEmptyOrWhitespace(dbUrl)) {
+      missing.push({
+        key: 'DATABASE_URL',
+        required: true,
+        description: `PostgreSQL connection string (NODE_ENV=${nodeEnv})`,
+      });
+    } else if (this.isPlaceholder(dbUrl)) {
+      warnings.push(
+        `🚨 CRITICAL WARNING: DATABASE_URL is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+      );
     }
 
     // Check other required variables (excluding DATABASE_URL which we handled above)

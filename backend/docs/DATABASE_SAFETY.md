@@ -260,7 +260,7 @@ For high-traffic production systems, configure read replicas:
 ```typescript
 // src/prisma/prisma.service.ts
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL_PROD,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
@@ -370,7 +370,7 @@ npx prisma migrate deploy
 chmod +x scripts/*.sh
 
 # Check database credentials
-echo $DATABASE_URL_PROD
+echo $DATABASE_URL
 ```
 
 ### Restore test fails

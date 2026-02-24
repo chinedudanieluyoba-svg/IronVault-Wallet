@@ -126,10 +126,7 @@ export class DatabaseSafetyService {
       }
 
       // Validate connection string uses SSL in production
-      const dbUrl =
-        process.env.DATABASE_URL_PROD ||
-        process.env.DATABASE_URL ||
-        process.env.DATABASE_URL_DEV;
+      const dbUrl = process.env.DATABASE_URL;
       if (
         dbUrl &&
         !dbUrl.includes('sslmode=require') &&

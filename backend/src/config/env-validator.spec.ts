@@ -101,6 +101,54 @@ describe('EnvironmentValidator', () => {
     );
   });
 
+  it('should NOT throw error when STRIPE_WEBHOOK_SECRET is missing (but should warn)', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    delete process.env.STRIPE_WEBHOOK_SECRET;
+
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+
+    // Verify warning is logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '🚨 CRITICAL WARNING: STRIPE_WEBHOOK_SECRET is NOT SET',
+      ),
+    );
+  });
+
+  it('should NOT throw error when TRANSAK_WEBHOOK_SECRET is missing (but should warn)', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    delete process.env.TRANSAK_WEBHOOK_SECRET;
+
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+
+    // Verify warning is logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '🚨 CRITICAL WARNING: TRANSAK_WEBHOOK_SECRET is NOT SET',
+      ),
+    );
+  });
+
+  it('should NOT throw error when PAYSTACK_WEBHOOK_SECRET is missing (but should warn)', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+    process.env.JWT_SECRET = 'test-secret';
+    delete process.env.PAYSTACK_WEBHOOK_SECRET;
+
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+
+    // Verify warning is logged
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '🚨 CRITICAL WARNING: PAYSTACK_WEBHOOK_SECRET is NOT SET',
+      ),
+    );
+  });
+
   it('should throw error listing ALL missing required variables (excluding optional MOONPAY_WEBHOOK_SECRET)', () => {
     process.env.NODE_ENV = 'development';
     delete process.env.DATABASE_URL;
@@ -130,14 +178,24 @@ describe('EnvironmentValidator', () => {
     expect(() => EnvironmentValidator.validate()).not.toThrow();
   });
 
-  it('should require CORS_ALLOWED_ORIGINS in production (fail fast if not set)', () => {
+  it('should NOT throw error when CORS_ALLOWED_ORIGINS is missing in production (but should warn)', () => {
     process.env.NODE_ENV = 'production';
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.JWT_SECRET = 'test-secret';
     process.env.MOONPAY_WEBHOOK_SECRET = 'moonpay-secret';
     delete process.env.CORS_ALLOWED_ORIGINS;
 
-    expect(() => EnvironmentValidator.validate()).toThrow('CORS_ALLOWED_ORIGINS');
+    expect(() => EnvironmentValidator.validate()).not.toThrow();
+
+    // Should log warning about missing CORS_ALLOWED_ORIGINS
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '\n⚠️  Optional environment variables not set (using defaults):',
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET',
+      ),
+    );
   });
 
   it('should not require CORS_ALLOWED_ORIGINS in development', () => {

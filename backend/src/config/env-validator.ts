@@ -38,6 +38,24 @@ const OPTIONAL_SECRETS: EnvVar[] = [
     description:
       'MoonPay webhook signature verification secret (webhook validation will fail without this)',
   },
+  {
+    key: 'STRIPE_WEBHOOK_SECRET',
+    required: false,
+    description:
+      'Stripe webhook signature verification secret (webhook validation will fail without this)',
+  },
+  {
+    key: 'TRANSAK_WEBHOOK_SECRET',
+    required: false,
+    description:
+      'Transak webhook signature verification secret (webhook validation will fail without this)',
+  },
+  {
+    key: 'PAYSTACK_WEBHOOK_SECRET',
+    required: false,
+    description:
+      'Paystack webhook signature verification secret (webhook validation will fail without this)',
+  },
 ];
 
 const OPTIONAL_ENV_VARS: EnvVar[] = [
@@ -170,15 +188,13 @@ export class EnvironmentValidator {
       }
     }
 
-    // PRODUCTION: Require CORS_ALLOWED_ORIGINS (fail fast if not set)
+    // PRODUCTION: Warn if CORS_ALLOWED_ORIGINS is not set (CORS will be disabled)
     if (nodeEnv === 'production') {
       const corsOrigins = process.env.CORS_ALLOWED_ORIGINS;
       if (this.isEmptyOrWhitespace(corsOrigins)) {
-        missing.push({
-          key: 'CORS_ALLOWED_ORIGINS',
-          required: true,
-          description: `Allowed frontend origins for CORS (comma-separated). Set in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
-        });
+        warnings.push(
+          `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET. CORS will be disabled in production — frontend API requests will fail. Set it in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        );
       } else if (this.isPlaceholder(corsOrigins)) {
         warnings.push(
           `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,

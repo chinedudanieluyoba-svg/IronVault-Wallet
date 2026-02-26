@@ -170,13 +170,15 @@ export class EnvironmentValidator {
       }
     }
 
-    // PRODUCTION: Warn about CORS_ALLOWED_ORIGINS (allow empty but warn)
+    // PRODUCTION: Require CORS_ALLOWED_ORIGINS (fail fast if not set)
     if (nodeEnv === 'production') {
       const corsOrigins = process.env.CORS_ALLOWED_ORIGINS;
       if (this.isEmptyOrWhitespace(corsOrigins)) {
-        warnings.push(
-          `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production. CORS will be disabled and API requests from frontend will fail. Set it in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
-        );
+        missing.push({
+          key: 'CORS_ALLOWED_ORIGINS',
+          required: true,
+          description: `Allowed frontend origins for CORS (comma-separated). Set in ${DEPLOYMENT_PLATFORM_LOCATION}.`,
+        });
       } else if (this.isPlaceholder(corsOrigins)) {
         warnings.push(
           `🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is using a placeholder value. Update it immediately in ${DEPLOYMENT_PLATFORM_LOCATION}.`,

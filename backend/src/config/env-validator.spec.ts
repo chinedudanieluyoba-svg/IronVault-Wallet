@@ -130,24 +130,14 @@ describe('EnvironmentValidator', () => {
     expect(() => EnvironmentValidator.validate()).not.toThrow();
   });
 
-  it('should NOT require CORS_ALLOWED_ORIGINS in production (but should warn)', () => {
+  it('should require CORS_ALLOWED_ORIGINS in production (fail fast if not set)', () => {
     process.env.NODE_ENV = 'production';
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.JWT_SECRET = 'test-secret';
     process.env.MOONPAY_WEBHOOK_SECRET = 'moonpay-secret';
     delete process.env.CORS_ALLOWED_ORIGINS;
 
-    expect(() => EnvironmentValidator.validate()).not.toThrow();
-
-    // Verify warning is logged
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      '\n⚠️  Optional environment variables not set (using defaults):',
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        '🚨 CRITICAL WARNING: CORS_ALLOWED_ORIGINS is NOT SET in production',
-      ),
-    );
+    expect(() => EnvironmentValidator.validate()).toThrow('CORS_ALLOWED_ORIGINS');
   });
 
   it('should not require CORS_ALLOWED_ORIGINS in development', () => {
@@ -248,6 +238,7 @@ describe('EnvironmentValidator', () => {
     process.env.NODE_ENV = 'production';
     process.env.DATABASE_URL = 'PLACEHOLDER_UPDATE_IN_RENDER_DASHBOARD';
     process.env.JWT_SECRET = 'test-secret-key-min-32-characters-long';
+    process.env.CORS_ALLOWED_ORIGINS = 'https://app.example.com';
 
     expect(() => EnvironmentValidator.validate()).not.toThrow();
 

@@ -28,12 +28,11 @@ export class LedgerIntegrityMonitor implements OnModuleInit, OnModuleDestroy {
       }
       this.running = true;
       this.runAudit()
-        .catch((error) => {
+        .catch((error: Error) => {
           this.auditLogger.error({}, 'Ledger integrity audit failed', error);
-          this.alertsService.alertReconciliationCrash(
-            'ledger_integrity',
-            error,
-          );
+          this.alertsService
+            .alertReconciliationCrash('ledger_integrity', error)
+            .catch(() => {});
         })
         .finally(() => {
           this.running = false;

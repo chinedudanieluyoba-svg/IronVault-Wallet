@@ -48,6 +48,9 @@ async function bootstrap() {
   ProductionConfigService.logConfig();
 
   const port = process.env.PORT ?? 3000;
+  // Enable NestJS built-in shutdown hooks so SIGTERM/SIGINT trigger
+  // OnModuleDestroy lifecycle hooks (e.g. PrismaService.$disconnect)
+  app.enableShutdownHooks();
   await app.listen(port);
   console.log(`🚀 Application listening on port ${port}`);
 }

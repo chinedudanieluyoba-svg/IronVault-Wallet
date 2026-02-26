@@ -33,9 +33,11 @@ export class WebhookRetryMonitor implements OnModuleInit, OnModuleDestroy {
       }
       this.running = true;
       this.runRetry()
-        .catch((error) => {
+        .catch((error: Error) => {
           this.auditLogger.error({}, 'Webhook retry job failed', error);
-          this.alertsService.alertReconciliationCrash('webhook_retry', error);
+          this.alertsService
+            .alertReconciliationCrash('webhook_retry', error)
+            .catch(() => {});
         })
         .finally(() => {
           this.running = false;

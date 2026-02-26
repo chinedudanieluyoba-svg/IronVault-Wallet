@@ -6,6 +6,11 @@ import ws from 'ws';
 // Required for Node.js environments without native WebSocket support (Node.js < 22)
 neonConfig.webSocketConstructor = ws;
 
+// Optimize for financial workloads: disable connection pipelining and write
+// coalescing to ensure strict ordering and transactional integrity.
+neonConfig.pipelineConnect = false;
+neonConfig.coalesceWrites = false;
+
 const dbUrl = process.env.DATABASE_URL;
 
 if (!dbUrl) {

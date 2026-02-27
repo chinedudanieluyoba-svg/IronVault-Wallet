@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaNeon } from '@prisma/adapter-neon';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 @Injectable()
 export class SecPrismaService
@@ -14,9 +15,15 @@ export class SecPrismaService
       throw new Error('DATABASE_URL is not defined. Please set DATABASE_URL.');
     }
 
-    // Pass PoolConfig directly to PrismaNeon (Prisma 7.x API)
+    const pool = new Pool({
+      connectionString: dbUrl,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+
     super({
-      adapter: new PrismaNeon({ connectionString: dbUrl }),
+      adapter: new PrismaPg(pool),
     });
   }
 

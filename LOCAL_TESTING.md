@@ -1,5 +1,12 @@
 # Local Testing Guide
 
+## Product Direction (Non-Custodial)
+
+- IronVault acts as interface + intelligence.
+- Blockchain is the settlement layer.
+- Binance is used only as a fiat on-ramp redirect.
+- Dashboard source of truth should be on-chain balances (RPC), token portfolio (indexer), and swap history (transaction hashes), not exchange account balances.
+
 ## Documentation Map
 
 See [Architecture](./docs/architecture.md), [Deployment](./docs/deployment.md), [Security](./docs/security.md), and [Backend API](./backend/README.md).

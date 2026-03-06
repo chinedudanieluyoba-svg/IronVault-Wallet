@@ -1,7 +1,7 @@
 import { validateAmount } from '../../common/validators/amount.validator';
 import { Currency, isValidCurrency } from '../../common/enums/currency.enum';
 
-export type OnRampProvider = 'moonpay' | 'transak' | 'paystack' | 'stripe';
+export type OnRampProvider = 'binance';
 
 export class InitiateOnRampDto {
   amount: number;
@@ -20,12 +20,7 @@ export class InitiateOnRampDto {
       );
     }
 
-    const validProviders: OnRampProvider[] = [
-      'moonpay',
-      'transak',
-      'paystack',
-      'stripe',
-    ];
+    const validProviders: OnRampProvider[] = ['binance'];
     if (!data.provider || !validProviders.includes(data.provider)) {
       throw new Error(`provider must be one of: ${validProviders.join(', ')}`);
     }

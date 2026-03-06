@@ -4,6 +4,20 @@
 
 Production-grade cryptocurrency wallet platform with **detect-first, fix-second** philosophy. The system prioritizes data integrity, auditability, and human oversight over automated corrections.
 
+## Target Product Direction (True Non-Custodial)
+
+- **IronVault = Interface + Intelligence**
+- **Blockchain = Settlement layer**
+- **On-ramps = Optional bridges**
+- **Binance is used for fiat on-ramp redirect only**
+
+### Dashboard Source of Truth
+
+- On-chain balances via RPC
+- Token portfolio via indexer
+- Swap history via transaction hash
+- Exchange account balances are not the source of truth
+
 ## High-Level Architecture
 
 ```mermaid

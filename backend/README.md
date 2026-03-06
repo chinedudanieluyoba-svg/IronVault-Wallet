@@ -2,6 +2,15 @@
 
 Production-grade cryptocurrency wallet platform with comprehensive reconciliation, audit trails, and human-in-the-loop financial controls.
 
+## Target Operating Model (True Non-Custodial)
+
+- **IronVault = Interface + Intelligence**
+- **Blockchain = Settlement layer**
+- **On-ramps = Optional bridges**
+- **Binance is used only for fiat on-ramp redirect**
+- **Dashboard source of truth = RPC balances + indexer portfolio + on-chain swap hashes**
+- **Not exchange account balances**
+
 [![NestJS](https://img.shields.io/badge/NestJS-10.x-E0234E?logo=nestjs)](https://nestjs.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.x-2D3748?logo=prisma)](https://www.prisma.io/)
@@ -324,6 +333,9 @@ MOONPAY_WEBHOOK_SECRET=your-moonpay-secret
 ```bash
 PORT=3000
 CORS_ALLOWED_ORIGINS=http://localhost:3000,https://app.example.com
+RPC_URL_ETH=https://eth-mainnet.g.alchemy.com/v2/your-key
+RPC_URL_POLYGON=https://polygon-mainnet.g.alchemy.com/v2/your-key
+RPC_URL_BSC=https://bsc-dataseed.binance.org
 WEBHOOK_ALLOWED_IPS=52.18.100.50,52.18.100.51
 JWT_SECRET_ROTATION_DATE=2026-02-07
 DATABASE_PASSWORD_ROTATION_DATE=2026-02-07

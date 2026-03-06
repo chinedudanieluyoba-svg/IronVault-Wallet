@@ -29,7 +29,7 @@ import { WebhookIPGuard } from '../common/guards/webhook-ip.guard';
 interface InitiateOnRampDto {
   amount: number;
   currency: string;
-  provider: 'moonpay' | 'transak' | 'paystack' | 'stripe';
+  provider: 'binance';
 }
 
 interface WebhookDto {

@@ -2,6 +2,20 @@
 
 Enterprise architecture for the crypto wallet platform.
 
+## Operating Model
+
+- **IronVault = Interface + Intelligence**
+- **Blockchain = Settlement layer**
+- **On-ramps = Optional bridges**
+- **Binance is used only as a fiat on-ramp redirect, not as a custody or balance source**
+
+## Dashboard Data Sources (Non-Custodial)
+
+- On-chain balances via RPC
+- Token portfolio via indexer
+- Swap history via on-chain transaction hashes
+- No exchange account balance as source of truth
+
 ## System Architecture
 
 ```mermaid
@@ -23,7 +37,9 @@ graph TB
         API[NestJS API Server]
         Auth[Auth Module]
         Wallet[Wallet Module]
-        OnRamp[OnRamp Module]
+        OnRamp[OnRamp Redirect Module]
+        Portfolio[Portfolio/Indexer Module]
+        Swap[Swap Aggregation Module]
         Transaction[Transaction Module]
         AdminMod[Admin Module]
     end
@@ -42,10 +58,15 @@ graph TB
         Secrets[Secrets Manager - AWS/GCP/Azure]
     end
 
-    subgraph "External Providers"
-        MoonPay[MoonPay]
-        Transak[Transak]
-        OtherProviders[Other Providers]
+    subgraph "Settlement + Data Sources"
+        Chain[Blockchain Networks]
+        RPC[RPC Providers]
+        Indexer[Indexer]
+        DEX[DEX Aggregators]
+    end
+
+    subgraph "Optional Fiat Bridge"
+        Binance[Binance Fiat On-Ramp Redirect]
     end
 
     Mobile --> CDN --> WAF --> LB
@@ -58,6 +79,8 @@ graph TB
     API --> Auth
     API --> Wallet
     API --> OnRamp
+    API --> Portfolio
+    API --> Swap
     API --> Transaction
     API --> AdminMod
 
@@ -78,9 +101,12 @@ graph TB
     DB --> Backup
     API --> Secrets
 
-    MoonPay -. webhook .-> OnRamp
-    Transak -. webhook .-> OnRamp
-    OtherProviders -. webhook .-> OnRamp
+    API --> RPC
+    API --> Indexer
+    API --> DEX
+    Chain --> RPC
+    Chain --> Indexer
+    API -. redirect .-> Binance
 
     style API fill:#4CAF50
     style DB fill:#2196F3

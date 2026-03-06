@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { HealthCheck } from "@/components/HealthCheck";
+import WalletStatus from "@/components/wallet/WalletStatus";
 
 export default function Home() {
   return (
@@ -8,6 +9,9 @@ export default function Home() {
       <main className="mx-auto w-full max-w-5xl px-6 py-16">
         <div className="mb-8 flex justify-center">
           <HealthCheck />
+        </div>
+        <div className="mb-6">
+          <WalletStatus />
         </div>
         <div className="rounded-3xl border border-zinc-200 bg-white p-10 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.35)]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-zinc-500">
@@ -23,15 +27,15 @@ export default function Home() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
               className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-              href="#features"
+              href="/dashboard"
             >
-              Explore Features
+              Open Dashboard
             </a>
             <a
               className="inline-flex items-center justify-center rounded-full border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-400"
-              href="#docs"
+              href="/swap"
             >
-              Read Docs
+              Start Swap
             </a>
           </div>
         </div>

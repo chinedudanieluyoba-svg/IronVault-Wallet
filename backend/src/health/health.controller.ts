@@ -1,13 +1,29 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { ReadinessService } from './readiness.service';
 
 @Controller()
 export class HealthController {
-  @Get('/health')
-  health() {
+  constructor(private readinessService: ReadinessService) {}
+
+  @Get('health')
+  getHealth() {
+    return { status: 'ok' };
+  }
+
+  @Get('ready')
+  async getReady() {
+    const report = await this.readinessService.checkReady();
+
+    if (!report.ok) {
+      throw new ServiceUnavailableException({
+        status: 'not_ready',
+        checks: report.checks,
+      });
+    }
+
     return {
-      status: 'ok',
-      service: 'ironvault-api',
-      timestamp: new Date().toISOString(),
+      status: 'ready',
+      checks: report.checks,
     };
   }
 }

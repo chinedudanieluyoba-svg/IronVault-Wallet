@@ -11,14 +11,14 @@ interface InitiateOnRampInput {
   walletId: string;
   amount: number;
   currency: string;
-  provider: 'binance';
+  provider: 'moonpay' | 'transak' | 'paystack' | 'stripe';
 }
 
 interface HandleProviderWebhookInput {
   providerTxId: string;
   status: string;
   amount: number;
-  provider: 'binance' | 'moonpay' | 'transak' | 'paystack' | 'stripe';
+  provider: 'moonpay' | 'transak' | 'paystack' | 'stripe';
   [key: string]: any;
 }
 

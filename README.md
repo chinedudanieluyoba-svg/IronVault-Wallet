@@ -1,6 +1,6 @@
 # cryptowallet-platform
 
-A non-custodial crypto wallet platform where IronVault provides interface + intelligence, while blockchain networks provide settlement.
+A secure cross-platform crypto wallet application for buying, selling, and managing digital assets using licensed on-ramp providers.
 
 ## Quick Links
 
@@ -14,19 +14,6 @@ A non-custodial crypto wallet platform where IronVault provides interface + inte
 - [Security](./docs/security.md)
 - [Backend API](./backend/README.md)
 - [Backend Railway Deployment](./backend/docs/DEPLOYMENT_RAILWAY.md)
-
-## Product Model
-
-- **IronVault = Interface + Intelligence**
-- **Blockchain = Settlement layer**
-- **On-ramps = Optional bridges (Binance redirect only for fiat on-ramp)**
-
-### Target Non-Custodial Dashboard Sources
-
-- On-chain balances via RPC
-- Token portfolio via indexer
-- Swap history via transaction hash
-- Not exchange account balances
 
 ## Repository Structure
 

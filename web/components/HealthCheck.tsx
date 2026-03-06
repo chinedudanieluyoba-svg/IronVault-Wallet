@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchBackendHealth } from '@/lib/api/health';
+import { fetchBackendHealth } from '@/lib/api';
 
 interface HealthStatus {
   status: string;

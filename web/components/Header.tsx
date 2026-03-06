@@ -1,5 +1,4 @@
 import Link from "next/link";
-import ConnectWalletButton from "@/components/wallet/ConnectWalletButton";
 
 export default function Header() {
   return (
@@ -9,11 +8,10 @@ export default function Header() {
           CryptoWallet
         </div>
         <nav className="flex items-center gap-6 text-sm font-medium text-zinc-700">
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/wallet">Wallet</Link>
-          <Link href="/swap">Swap</Link>
-          <Link href="/portfolio">Portfolio</Link>
-          <ConnectWalletButton />
+          <Link href="/">Home</Link>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#security">Security</a>
         </nav>
       </div>
     </header>

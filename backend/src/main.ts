@@ -10,7 +10,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1');
 
   app.enableCors({
     origin: [
@@ -23,11 +23,11 @@ async function bootstrap() {
   // 🔒 Global exception filter: Hide stack traces in production
   app.useGlobalFilters(new ProductionExceptionFilter());
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT || 3000;
   // Enable NestJS built-in shutdown hooks so SIGTERM/SIGINT trigger
   // OnModuleDestroy lifecycle hooks (e.g. PrismaService.$disconnect)
   app.enableShutdownHooks();
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`🚀 Application listening on port ${port}`);
 }
 bootstrap();

@@ -1,14 +1,16 @@
--- Recovery migration: resolve P3009 blocker from failed migration 20260206_add_missing_webhook_tracking
+-- Recovery migration: resolve failed migration 20260206_add_missing_webhook_tracking
 --
 -- Background: The migration 20260206_add_missing_webhook_tracking was recorded as
--- failed in _prisma_migrations (started_at set, finished_at NULL). Prisma error
--- P3009 blocks all subsequent migrations until the failed entry is resolved.
+-- failed in _prisma_migrations (Prisma error P3009), blocking all subsequent
+-- migrations from running.
 --
 -- Strategy:
 --   1. Mark the failed migration as rolled back in _prisma_migrations so Prisma
---      stops treating it as a blocker (equivalent to `prisma migrate resolve --rolled-back`).
+--      stops treating it as a blocker. This replicates what
+--      `prisma migrate resolve --rolled-back 20260206_add_missing_webhook_tracking`
+--      does at the SQL level, making the fix idempotent and self-contained.
 --   2. Drop the MissingWebhookAlert table if it was partially created during the
---      failed run (idempotent — safe to run even if the table does not exist).
+--      failed run (safe to run even if the table does not exist).
 --   3. Re-create the table, indexes, and foreign key constraint cleanly so the
 --      schema reaches the intended final state.
 

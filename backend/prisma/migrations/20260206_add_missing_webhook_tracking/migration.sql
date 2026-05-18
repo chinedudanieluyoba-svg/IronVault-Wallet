@@ -25,4 +25,5 @@ CREATE INDEX "MissingWebhookAlert_status_idx" ON "MissingWebhookAlert"("status")
 CREATE INDEX "MissingWebhookAlert_detectedAt_idx" ON "MissingWebhookAlert"("detectedAt");
 
 -- AddForeignKey
-ALTER TABLE "MissingWebhookAlert" ADD CONSTRAINT "MissingWebhookAlert_onRampId_fkey" FOREIGN KEY ("onRampId") REFERENCES "OnRamp"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- TEMPORARILY DISABLED - Foreign key constraint commented out to fix migration blocker
+-- ALTER TABLE "MissingWebhookAlert" ADD CONSTRAINT "MissingWebhookAlert_onRampId_fkey" FOREIGN KEY ("onRampId") REFERENCES "OnRamp"("id") ON DELETE CASCADE ON UPDATE CASCADE;
